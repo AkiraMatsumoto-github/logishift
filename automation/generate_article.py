@@ -69,12 +69,11 @@ def main():
     parser.add_argument("--keyword", required=True, help="Keyword for the article")
     parser.add_argument("--dry-run", action="store_true", help="Generate content but do not post to WordPress")
     parser.add_argument("--schedule", help="Schedule post for future publication (format: 'YYYY-MM-DD HH:MM')")
+    parser.add_argument("--type", choices=['know', 'buy', 'do', 'news', 'global'], default='know', help="Content type (default: know)")
     
     args = parser.parse_args()
     
-    args = parser.parse_args()
-    
-    print(f"Starting article generation for keyword: {args.keyword}")
+    print(f"Starting article generation for keyword: {args.keyword} (Type: {args.type})")
     
     # 1. Initialize Gemini Client
     try:
@@ -85,7 +84,7 @@ def main():
         
     # 2. Generate Content
     print("Generating content with Gemini...")
-    generated_text = gemini.generate_article(args.keyword)
+    generated_text = gemini.generate_article(args.keyword, article_type=args.type)
     
     if not generated_text:
         print("Failed to generate content.")
