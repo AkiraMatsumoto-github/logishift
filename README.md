@@ -145,7 +145,7 @@ python automation/generate_article.py --keyword "2024年問題" --schedule "2025
 - **仕組み**:
   1. WordPressから既存記事を取得（`InternalLinkSuggester`）
   2. Geminiが新規記事のテーマと既存記事の関連度をスコアリング
-  3. 関連度の高い記事を執筆プロンプトに追加指示として注入し、自然な形でリンク設置
+  3. 関連度の高い記事の”抜粋”を執筆プロンプトに追加指示として注入し、自然な形でリンク設置
 
 - **設定（読み込み記事数）**:
   現在、参照する既存記事数は **最新50件** に設定されています。
@@ -204,6 +204,10 @@ GitHub Secrets (`Settings > Secrets`) を確認してください：
 - `SSH_PRIVATE_KEY`: (正しい秘密鍵か)
 
 ### ローカル開発
+#### 環境立ち上げ
+```bash
+source automation/venv/bin/activate   
+```
 
 #### Gemini API エラー (`GeminiClient` object has no attribute 'model')
 `seo_optimizer.py` で発生していましたが、修正済みです。現在は `self.gemini.generate_content()` を使用しています。

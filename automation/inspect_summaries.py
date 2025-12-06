@@ -45,15 +45,12 @@ def main():
         return
 
     count = 0
-    for i, post in enumerate(posts):
+    for post in posts:
         post_id = post['id']
         title = post['title']['rendered']
         
         # safely get meta
         meta = post.get('meta', {})
-        
-        if i == 0:
-            print(f"DEBUG: All meta keys for post {post_id}: {list(meta.keys())}")
         
         summary_raw = meta.get('ai_structured_summary')
         
@@ -62,7 +59,13 @@ def main():
             print(f"[{post_id}] {title}")
             try:
                 data = json.loads(summary_raw)
-                print(f"  Summary: {textwrap.shorten(data.get('summary', ''), width=100, placeholder='...')}")
+                # JSON loads successfully
+                
+                # Use simple slicing for display as textwrap fails on Japanese text (no spaces)
+                summary_text = data.get('summary', '')
+                display_summary = (summary_text[:100] + '...') if len(summary_text) > 100 else summary_text
+                
+                print(f"  Summary: {display_summary}")
                 print(f"  Topics: {', '.join(data.get('key_topics', []))}")
                 print(f"  Audience: {', '.join(data.get('target_audience', []))}")
                 print(f"  Entities: {', '.join(data.get('entities', []))}")
