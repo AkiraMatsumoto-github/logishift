@@ -179,11 +179,28 @@ get_header();
 
 			<!-- Regional Filter Tabs -->
 			<div class="region-filter-tabs">
-				<button class="region-tab active" data-region="all"><?php esc_html_e( 'すべて', 'logishift' ); ?></button>
-				<button class="region-tab" data-region="usa">🇺🇸 <?php esc_html_e( 'アメリカ', 'logishift' ); ?></button>
-				<button class="region-tab" data-region="europe">🇪🇺 <?php esc_html_e( 'ヨーロッパ', 'logishift' ); ?></button>
-				<button class="region-tab" data-region="china">🇨🇳 <?php esc_html_e( '中国', 'logishift' ); ?></button>
-				<button class="region-tab" data-region="southeast-asia">🌏 <?php esc_html_e( '東南アジア', 'logishift' ); ?></button>
+				<?php
+				$global_cat = get_category_by_slug( 'news-global' );
+				$global_url = $global_cat ? get_category_link( $global_cat ) : '#';
+				?>
+				<button class="region-tab active" data-region="all" data-url="<?php echo esc_url( $global_url ); ?>"><?php esc_html_e( 'すべて', 'logishift' ); ?></button>
+				
+				<?php
+				$regions = array(
+					'usa'            => array( 'label' => 'アメリカ', 'flag' => '🇺🇸' ),
+					'europe'         => array( 'label' => 'ヨーロッパ', 'flag' => '🇪🇺' ),
+					'china'          => array( 'label' => '中国', 'flag' => '🇨🇳' ),
+					'southeast-asia' => array( 'label' => '東南アジア', 'flag' => '🌏' ),
+				);
+
+				foreach ( $regions as $slug => $info ) :
+					$tag = get_term_by( 'slug', $slug, 'post_tag' );
+					$url = $tag ? get_tag_link( $tag ) : '#';
+					?>
+					<button class="region-tab" data-region="<?php echo esc_attr( $slug ); ?>" data-url="<?php echo esc_url( $url ); ?>">
+						<?php echo esc_html( $info['flag'] . ' ' . $info['label'] ); ?>
+					</button>
+				<?php endforeach; ?>
 			</div>
 
 			<div class="global-articles-container">
@@ -191,7 +208,7 @@ get_header();
 				// Get all global trend articles with regional tags
 				$global_args = array(
 					'category_name'  => 'news-global',
-					'posts_per_page' => 12,
+					'posts_per_page' => 6,
 					'orderby'        => 'date',
 					'order'          => 'DESC',
 				);
@@ -239,6 +256,14 @@ get_header();
 						wp_reset_postdata();
 						?>
 					</div>
+					
+					<!-- Show More Button -->
+					<div class="global-show-more-container" style="text-align: center; margin-top: 32px;">
+						<a href="<?php echo esc_url( $global_url ); ?>" class="button outline global-show-more-link">
+							<?php esc_html_e( 'もっと見る', 'logishift' ); ?> →
+						</a>
+					</div>
+
 				<?php else : ?>
 					<p class="no-posts"><?php esc_html_e( '記事がまだありません。', 'logishift' ); ?></p>
 				<?php endif; ?>
@@ -321,10 +346,46 @@ get_header();
 </main>
 
 <script>
-// Regional filter functionality
+// Regional filter functionality with Mobile Limit
 document.addEventListener('DOMContentLoaded', function() {
 	const regionTabs = document.querySelectorAll('.region-tab');
 	const globalArticles = document.querySelectorAll('.global-article');
+	const showMoreLink = document.querySelector('.global-show-more-link');
+	
+	function filterArticles(selectedRegion) {
+		let visibleCount = 0;
+		const isMobile = window.matchMedia("(max-width: 768px)").matches;
+		const limit = isMobile ? 3 : 999; // Limit to 3 on mobile
+
+		globalArticles.forEach(article => {
+			const articleRegions = article.getAttribute('data-regions');
+			const shouldShow = (selectedRegion === 'all' || articleRegions.includes(selectedRegion));
+
+			if (shouldShow) {
+				// If strictly filtering (< limit), show. Else hide.
+				if (visibleCount < limit) {
+					article.style.display = 'block';
+					visibleCount++;
+				} else {
+					article.style.display = 'none';
+				}
+			} else {
+				article.style.display = 'none';
+			}
+		});
+
+		// Update "Show More" Link
+		if (showMoreLink) {
+			const activeTab = document.querySelector('.region-tab[data-region="' + selectedRegion + '"]');
+			if (activeTab && activeTab.dataset.url) {
+				showMoreLink.href = activeTab.dataset.url;
+				// Only show button if isMobile (since on PC we show all 6 anyway, but user experience wise "Show More" is good to keep or hide? 
+				// User request: "スマホの場合... もっと見るを押した場合に... 遷移させる"
+				// Let's keep it visible on PC too as it acts as "View Archive" which is useful.
+				showMoreLink.style.display = 'inline-block';
+			}
+		}
+	}
 
 	regionTabs.forEach(tab => {
 		tab.addEventListener('click', function() {
@@ -334,17 +395,22 @@ document.addEventListener('DOMContentLoaded', function() {
 			regionTabs.forEach(t => t.classList.remove('active'));
 			this.classList.add('active');
 			
-			// Filter articles
-			globalArticles.forEach(article => {
-				const articleRegions = article.getAttribute('data-regions');
-				
-				if (selectedRegion === 'all' || articleRegions.includes(selectedRegion)) {
-					article.style.display = 'block';
-				} else {
-					article.style.display = 'none';
-				}
-			});
+			filterArticles(selectedRegion);
 		});
+	});
+
+	// Initial Filter
+	filterArticles('all');
+
+	// Re-filter on resize to adjust the limit
+	let resizeTimeout;
+	window.addEventListener('resize', function() {
+		clearTimeout(resizeTimeout);
+		resizeTimeout = setTimeout(function() {
+			const activeTab = document.querySelector('.region-tab.active');
+			const selectedRegion = activeTab ? activeTab.getAttribute('data-region') : 'all';
+			filterArticles(selectedRegion);
+		}, 200);
 	});
 });
 </script>
