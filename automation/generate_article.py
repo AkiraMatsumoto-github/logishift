@@ -418,7 +418,7 @@ Select the most relevant ones (if any) and include them in the article using sta
         structured_summary = gemini.generate_structured_summary(text_content_for_summary)
         
         if structured_summary:
-            import json
+
             meta_fields["ai_structured_summary"] = json.dumps(structured_summary, ensure_ascii=False)
             print("  - Structured summary generated and added to meta.")
         else:
