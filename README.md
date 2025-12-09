@@ -206,11 +206,9 @@ GitHub Secrets (`Settings > Secrets`) を確認してください：
 ### ローカル開発
 #### 環境立ち上げ
 ```bash
-source automation/venv/bin/activate   
+source automation/venv/bin/activate
+export GOOGLE_CLOUD_LOCATION=global   
 ```
-
-#### Gemini API エラー (`GeminiClient` object has no attribute 'model')
-`seo_optimizer.py` で発生していましたが、修正済みです。現在は `self.gemini.generate_content()` を使用しています。
 
 #### 記事が生成されない (スコア不足)
 `pipeline.py` の `--threshold` デフォルト値(85)が高すぎる可能性があります。`--threshold 60` 程度に下げてお試しください。
