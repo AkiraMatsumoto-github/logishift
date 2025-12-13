@@ -29,15 +29,15 @@ get_header();
 				</header>
 
 				<?php if ( have_posts() ) : ?>
-					<div class="article-list">
+					<div class="article-grid">
 						<?php
 						while ( have_posts() ) :
 							the_post();
 							?>
-							<article id="post-<?php the_ID(); ?>" <?php post_class( 'article-card horizontal' ); ?>>
+							<article id="post-<?php the_ID(); ?>" <?php post_class( 'article-card' ); ?>>
 								<div class="article-thumbnail">
 									<?php if ( has_post_thumbnail() ) : ?>
-										<a href="<?php the_permalink(); ?>"><?php the_post_thumbnail( 'medium_large' ); ?></a>
+										<a href="<?php the_permalink(); ?>"><?php the_post_thumbnail( 'medium' ); ?></a>
 									<?php else : ?>
 										<a href="<?php the_permalink(); ?>"><div class="no-image"></div></a>
 									<?php endif; ?>
@@ -53,9 +53,6 @@ get_header();
 										<span class="posted-on"><?php echo get_the_date(); ?></span>
 									</div>
 									<h2 class="article-title"><a href="<?php the_permalink(); ?>"><?php the_title(); ?></a></h2>
-									<div class="article-excerpt">
-										<?php the_excerpt(); ?>
-									</div>
 								</div>
 							</article>
 							<?php
