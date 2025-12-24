@@ -175,6 +175,12 @@ get_header();
 				}
 				?>
 			</div>
+
+			<div style="text-align: right; margin-top: 24px;">
+				<a href="<?php echo esc_url( home_url( '/ranking/' ) ); ?>" class="text-link-arrow">
+					<?php esc_html_e( 'ランキング一覧へ', 'logishift' ); ?> →
+				</a>
+			</div>
 		</div>
 	</section>
 
