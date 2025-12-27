@@ -129,11 +129,17 @@ def main():
     
     # 3. Generation
     print("\n=== Step 3: Generation ===")
+    
+    if not high_score_articles:
+        print("No articles to generate. Exiting.")
+        return
+
     count = 0
     
     # Schedule logic removed - defaulting to immediate publish
     
     # Initialize Classifier & Clients
+    print("Initializing clients for generation...")
     classifier = ArticleClassifier()
     gemini_client = GeminiClient()
     wp_client = WordPressClient()
@@ -188,7 +194,7 @@ def main():
         
         # Base command
         cmd = [
-            "python", os.path.join(base_dir, "generate_article.py"),
+            sys.executable, os.path.join(base_dir, "generate_article.py"),
             "--keyword", keyword,
             "--type", article_type
         ]
