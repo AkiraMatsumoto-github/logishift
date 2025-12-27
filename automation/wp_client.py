@@ -181,6 +181,25 @@ class WordPressClient:
                 print(f"Response content: {e.response.text}")
             return None
 
+    def get_popular_posts(self, days=30, limit=20):
+        """
+        Retrieve popular posts from custom endpoint.
+        """
+        try:
+            url = f"{self.wp_url}/?rest_route=/logishift/v1/popular-posts"
+            params = {
+                "days": days,
+                "limit": limit
+            }
+            
+            response = requests.get(url, params=params, auth=self.auth)
+            response.raise_for_status()
+            return response.json()
+            
+        except Exception as e:
+            print(f"Error fetching popular posts: {e}")
+            return []
+
     def upload_media(self, file_path, alt_text=""):
         """
         Upload a media file to WordPress.

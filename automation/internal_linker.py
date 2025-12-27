@@ -14,44 +14,77 @@ class InternalLinkSuggester:
     def fetch_candidates(self, limit: int = 100) -> List[Dict]:
         """
         Fetch existing posts from WordPress to serve as link candidates.
+        Mixes recent posts and popular posts.
         """
-        print(f"Fetching last {limit} posts for internal linking candidates...")
-        posts = self.wp.get_posts(limit=limit, status="publish")
-        
-        if not posts:
-            print("No existing posts found.")
-            return []
-
         candidates = []
-        for post in posts:
-            # Try to get structured summary from meta
-            # Note: The WP client's get_posts might return 'meta' if the API supports it in list view, 
-            # or we might rely on the fact that we put it there.
-            # If not available, fall back to excerpt.
-            
-            ai_summary_json = None
-            if 'meta' in post and 'ai_structured_summary' in post['meta']:
-                 try:
-                     ai_summary_json = json.loads(post['meta']['ai_structured_summary'])
-                 except:
-                     pass
-            
-            summary_text = ""
-            if ai_summary_json:
-                summary_text = f"Title: {post['title']['rendered']}\nSummary: {ai_summary_json.get('summary', '')}\nTopics: {', '.join(ai_summary_json.get('key_topics', []))}\nEntities: {', '.join(ai_summary_json.get('entities', []))}"
-            else:
-                summary_text = f"Title: {post['title']['rendered']}\nExcerpt: {self._clean_excerpt(post['excerpt']['rendered'])}"
+        seen_ids = set()
 
-            candidates.append({
-                "id": post['id'],
-                "title": post['title']['rendered'],
-                "url": post['link'],
-                "summary_context": summary_text, # Store combined context for prompting
-                "excerpt": self._clean_excerpt(post['excerpt']['rendered']) # Keep original for fallback
-            })
+        # 1. Fetch Popular Posts (High PV)
+        print("Fetching popular posts for internal linking...")
+        try:
+            popular_posts = self.wp.get_popular_posts(days=30, limit=20)
+            if popular_posts:
+                print(f"Found {len(popular_posts)} popular posts.")
+                for post in popular_posts:
+                    if post['id'] not in seen_ids:
+                        candidates.append(self._process_post(post))
+                        seen_ids.add(post['id'])
+        except Exception as e:
+            print(f"Warning: Failed to fetch popular posts: {e}")
+
+        # 2. Fetch Recent Posts (Latest)
+        # Reduce limit by number of popular posts found to keep total reasonable, or just add on top.
+        # Let's target total 'limit' count.
+        remaining_limit = max(10, limit - len(candidates))
         
-        print(f"Loaded {len(candidates)} candidates.")
+        print(f"Fetching last {remaining_limit} recent posts...")
+        recent_posts = self.wp.get_posts(limit=remaining_limit, status="publish")
+        
+        if recent_posts:
+            for post in recent_posts:
+                 if post['id'] not in seen_ids:
+                    candidates.append(self._process_post(post))
+                    seen_ids.add(post['id'])
+
+        print(f"Total candidates loaded: {len(candidates)}")
         return candidates
+
+    def _process_post(self, post) -> Dict:
+        """Helper to process raw WP post into candidate dict."""
+        ai_summary_json = None
+        # Check meta location - standard API vs custom endpoint structure might differ slightly
+        # get_posts returns dict directly. get_popular_posts returns similar struct.
+        
+        meta = post.get('meta', {})
+        if 'ai_structured_summary' in meta:
+             try:
+                 # Check if it's already a dict (API sometimes expands) or string
+                 summary_val = meta['ai_structured_summary']
+                 if isinstance(summary_val, str):
+                    ai_summary_json = json.loads(summary_val)
+                 elif isinstance(summary_val, dict):
+                    ai_summary_json = summary_val
+             except:
+                 pass
+        
+        summary_text = ""
+        title = post['title']['rendered']
+        # Handle excerpt which might be an object {'rendered': ...} or string depending on endpoint
+        excerpt_raw = post.get('excerpt', '')
+        excerpt_text = excerpt_raw['rendered'] if isinstance(excerpt_raw, dict) else str(excerpt_raw)
+
+        if ai_summary_json:
+            summary_text = f"Title: {title}\nSummary: {ai_summary_json.get('summary', '')}\nTopics: {', '.join(ai_summary_json.get('key_topics', []))}"
+        else:
+            summary_text = f"Title: {title}\nExcerpt: {self._clean_excerpt(excerpt_text)}"
+
+        return {
+            "id": post['id'],
+            "title": title,
+            "url": post['link'] if 'link' in post else post.get('guid', {}).get('rendered', ''),
+            "summary_context": summary_text,
+            "excerpt": self._clean_excerpt(excerpt_text)
+        }
 
     def score_relevance(self, new_article_keyword: str, new_article_context: str, candidates: List[Dict]) -> List[Dict]:
         """

@@ -345,4 +345,47 @@ function logishift_initialize_popular_articles() {
         logishift_create_view_table();
     }
 }
-add_action( 'init', 'logishift_initialize_popular_articles' );
+/**
+ * Register REST API endpoint for Popular Posts.
+ * Endpoint: /wp-json/logishift/v1/popular-posts
+ */
+function logishift_register_popular_posts_route() {
+    register_rest_route( 'logishift/v1', '/popular-posts', array(
+        'methods'  => 'GET',
+        'callback' => 'logishift_get_popular_posts_api',
+        'permission_callback' => '__return_true', // Public endpoint
+    ) );
+}
+add_action( 'rest_api_init', 'logishift_register_popular_posts_route' );
+
+/**
+ * Callback for Popular Posts API.
+ */
+function logishift_get_popular_posts_api( $request ) {
+    $days = $request->get_param( 'days' ) ? intval( $request->get_param( 'days' ) ) : 30; // Default to 30 days for broader range
+    $limit = $request->get_param( 'limit' ) ? intval( $request->get_param( 'limit' ) ) : 20;
+
+    if ( ! function_exists( 'logishift_get_popular_posts' ) ) {
+        return new WP_Error( 'no_function', 'Popular posts function not found', array( 'status' => 500 ) );
+    }
+
+    $posts = logishift_get_popular_posts( $days, $limit );
+    
+    $data = array();
+    foreach ( $posts as $post ) {
+        // Format similar to standard WP REST API post object (simplified)
+        $data[] = array(
+            'id' => $post->ID,
+            'date' => $post->post_date,
+            'link' => get_permalink( $post->ID ),
+            'title' => array( 'rendered' => $post->post_title ),
+            'excerpt' => array( 'rendered' => has_excerpt( $post->ID ) ? get_the_excerpt( $post->ID ) : wp_trim_words( $post->post_content, 20 ) ),
+            'views' => $post->views,
+            'meta' => array(
+                'ai_structured_summary' => get_post_meta( $post->ID, 'ai_structured_summary', true )
+            )
+        );
+    }
+
+    return $data;
+}
