@@ -83,22 +83,23 @@ BATCH_SCORING_PROMPT = SHARED_CRITERIA + """
 ]
 """
 
-def score_article(article, model_name="gemini-3-pro-preview"):
+def score_article(article, model_name="gemini-3-pro-preview", client=None):
     """Score a single article using Gemini API."""
     
-    try:
-        client = GeminiClient()
-    except Exception as e:
-        print(f"Error initializing GeminiClient: {e}", file=sys.stderr)
-        return {
-            "title": article.get("title"),
-            "url": article.get("url"),
-            "source": article.get("source"),
-            "summary": article.get("summary", ""),
-            "score": 0,
-            "reasoning": f"Initialization Error: {str(e)}",
-            "relevance": "error"
-        }
+    if client is None:
+        try:
+            client = GeminiClient()
+        except Exception as e:
+            print(f"Error initializing GeminiClient: {e}", file=sys.stderr)
+            return {
+                "title": article.get("title"),
+                "url": article.get("url"),
+                "source": article.get("source"),
+                "summary": article.get("summary", ""),
+                "score": 0,
+                "reasoning": f"Initialization Error: {str(e)}",
+                "relevance": "error"
+            }
     
     prompt = SCORING_PROMPT.format(
         title=article.get("title", ""),
@@ -145,20 +146,22 @@ def score_article(article, model_name="gemini-3-pro-preview"):
             "relevance": "error"
         }
 
-def score_articles_batch(articles, model_name="gemini-3-pro-preview"):
+def score_articles_batch(articles, model_name="gemini-3-pro-preview", client=None, start_id=0):
     """Score a batch of articles using Gemini API."""
     if not articles:
         return []
 
-    try:
-        client = GeminiClient()
-    except Exception as e:
-        print(f"Error initializing GeminiClient: {e}", file=sys.stderr)
-        return []
+    if client is None:
+        try:
+            client = GeminiClient()
+        except Exception as e:
+            print(f"Error initializing GeminiClient: {e}", file=sys.stderr)
+            return []
 
     articles_text = ""
     for i, article in enumerate(articles):
-        # Assign a temporary ID for matching
+        # Assign a temporary ID for matching (relative to batch, but we could use start_id if needed for logging)
+        # Using simple index 0..N for the batch prompt is usually safer for the LLM to understand.
         articles_text += f"\nID: {i}\nタイトル: {article.get('title')}\n要約: {article.get('summary', 'なし')}\nソース: {article.get('source')}\n---\n"
 
     prompt = BATCH_SCORING_PROMPT.format(articles_text=articles_text)
