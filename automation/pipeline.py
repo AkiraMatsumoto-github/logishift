@@ -50,7 +50,7 @@ def run_command(command):
 def main():
     parser = argparse.ArgumentParser(description="LogiShift Automation Pipeline")
     parser.add_argument("--days", type=int, help="Days to look back for collection")
-    parser.add_argument("--hours", type=int, default=3, help="Hours to look back for collection (overrides --days)")
+    parser.add_argument("--hours", type=int, help="Hours to look back for collection (overrides --days, default: 6)")
     parser.add_argument("--threshold", type=int, default=85, help="Score threshold for generation")
     parser.add_argument("--limit", type=int, default=2, help="Max articles to generate per run")
     parser.add_argument("--score-limit", type=int, default=0, help="Max articles to score (0 for all)")
@@ -76,17 +76,25 @@ def main():
     from automation.gemini_client import GeminiClient
     
     collected_articles = []
-    if args.hours:
-        print(f"Collecting articles from last {args.hours} hours...")
+    
+    # Determine lookback
+    lookback_hours = None
+    lookback_days = None
+    
+    if args.hours is not None:
+        lookback_hours = args.hours
+        print(f"Collecting articles from last {lookback_hours} hours...")
+    elif args.days is not None:
+        lookback_days = args.days
+        print(f"Collecting articles from last {lookback_days} days...")
     else:
-        print(f"Collecting articles from last {args.days} days...")
+        # Default behavior
+        lookback_hours = 6
+        print(f"Collecting articles from last {lookback_hours} hours (default)...")
+        
     for name, url in DEFAULT_SOURCES.items():
-        # Note: fetch_rss in collector.py currently has hardcoded 2 days logic inside?
-        # Let's check.
-        # It has `if (now - published_parsed).days <= 2:`
-        # We should probably update collector.py to accept days param in fetch_rss.
-        # For now, let's assume 2 days is fine or just filter later.
-        fetched = fetch_rss(url, name, days=args.days, hours=args.hours)
+        # fetch_rss accepts both, prioritizes hours if set not None
+        fetched = fetch_rss(url, name, days=lookback_days, hours=lookback_hours)
         collected_articles.extend(fetched)
         
     print(f"Collected {len(collected_articles)} articles.")
@@ -100,24 +108,55 @@ def main():
         print(f"Limiting scoring to first {args.score_limit} articles.")
         articles_to_score = collected_articles[:args.score_limit]
     
+    
+    # Initialize Gemini Client once
+    gemini_client = GeminiClient()
+    
     import time
     batch_size = 10
     print(f"Scoring in batches of {batch_size}...")
     
+    # Early Exit Logic
+    high_score_count = 0
+    early_exit_threshold = int(args.limit * 2) # Updated to 2x buffer
+    # Ensure at least 1
+    if early_exit_threshold < 1:
+        early_exit_threshold = 1
+    
+    print(f"Early Exit Threshold configured: Stop if {early_exit_threshold} high-score articles found.")
+
     for i in range(0, len(articles_to_score), batch_size):
-        batch = articles_to_score[i:i+batch_size]
-        print(f"[{i+1}-{min(i+batch_size, len(articles_to_score))}/{len(articles_to_score)}] Scoring batch...")
+        batch = articles_to_score[i:i + batch_size]
+        print(f"[{i+1}-{min(i+batch_size, len(articles_to_score))}/{len(articles_to_score)}] Processing batch...")
         
-        batch_results = score_articles_batch(batch)
-        
-        if batch_results:
-            scored_articles.extend(batch_results)
-        else:
-            print("Warning: Batch failed or returned no results. Falling back to individual scoring...")
-            for article in batch:
-                print(f"  Fallback Scoring: {article['title'][:30]}...")
-                scored = score_article(article)
-                scored_articles.append(scored)
+        try:
+            batch_results = score_articles_batch(batch, client=gemini_client, start_id=i)
+            
+            if batch_results:
+                scored_articles.extend(batch_results)
+                 # Simple progress indication & Count High Scores
+                for res in batch_results:
+                     score = res.get('score', 0)
+                     print(f"  - Scored: {res.get('title', 'Unknown')[:40]}... -> {score} pts")
+                     if score >= args.threshold:
+                         high_score_count += 1
+            else:
+                print("Warning: Batch failed or returned no results. Falling back to individual scoring...")
+                for article in batch:
+                    print(f"  Fallback Scoring: {article['title'][:30]}...")
+                    # Pass client to score_article as well
+                    scored = score_article(article, client=gemini_client)
+                    scored_articles.append(scored)
+                    if scored.get('score', 0) >= args.threshold:
+                        high_score_count += 1
+            
+            # Check for Early Exit
+            if high_score_count >= early_exit_threshold:
+                print(f"\n🚀 Early Exit: Found {high_score_count} candidate articles (Target >= {early_exit_threshold}). Stopping scoring.")
+                break
+                
+        except Exception as e:
+            print(f"Error processing batch: {e}")
                 
         time.sleep(2) # Rate limit protection
         
@@ -141,7 +180,7 @@ def main():
     # Initialize Classifier & Clients
     print("Initializing clients for generation...")
     classifier = ArticleClassifier()
-    gemini_client = GeminiClient()
+    # gemini_client is already initialized
     wp_client = WordPressClient()
 
     # Fetch existing posts for deduplication
