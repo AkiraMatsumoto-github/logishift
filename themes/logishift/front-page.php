@@ -124,7 +124,109 @@ get_header();
 		</div>
 	</section>
 	<!-- Weekly Summary Section -->
-	<section id="weekly-summary" class="weekly-summary-section" style="background-color: #f0f4f8; padding: 40px 0;">
+	<style>
+		/* Weekly Summary Specific Styles */
+		.weekly-summary-section {
+			background-color: #f0f4f8;
+			padding: 40px 0;
+		}
+		.weekly-hero-card {
+			display: flex;
+			gap: 30px;
+			align-items: center;
+			background: #fff;
+			padding: 30px;
+			border-radius: 12px;
+			box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+		}
+		.weekly-thumbnail {
+			flex: 1;
+			max-width: 50%;
+		}
+		.weekly-thumbnail img {
+			width: 100%;
+			height: auto;
+			border-radius: 8px;
+			object-fit: cover;
+		}
+		.weekly-content {
+			flex: 1;
+			display: flex;
+			flex-direction: column;
+		}
+		.weekly-meta {
+			margin-bottom: 15px; 
+			color: #666; 
+			font-size: 0.9em;
+		}
+		.weekly-label {
+			background: #2c3e50; 
+			color: #fff; 
+			padding: 4px 10px; 
+			border-radius: 20px; 
+			font-size: 0.8em; 
+			margin-right: 10px;
+			display: inline-block;
+		}
+		.weekly-title {
+			font-size: 1.8em; 
+			margin-bottom: 15px; 
+			line-height: 1.4;
+		}
+		.weekly-title a {
+			text-decoration: none; 
+			color: #333;
+		}
+		.weekly-excerpt {
+			font-size: 1em; 
+			color: #555; 
+			line-height: 1.6; 
+			margin-bottom: 20px;
+		}
+		.weekly-button {
+			background: #e67e22; 
+			color: #fff; 
+			padding: 12px 0; /* Changed to vertical padding only */
+			text-decoration: none; 
+			border-radius: 5px; 
+			font-weight: bold;
+			display: inline-block;
+			transition: background 0.3s;
+			width: 100%; /* Full width */
+			text-align: center; /* Center text */
+		}
+		.weekly-button:hover {
+			background: #d35400;
+		}
+
+		@media (max-width: 768px) {
+			.weekly-hero-card {
+				flex-direction: column;
+				padding: 20px;
+				gap: 10px; /* Reduced gap */
+			}
+			.weekly-thumbnail {
+				display: none; /* Hide image on mobile based on feedback */
+			}
+			.weekly-title {
+				font-size: 1.5em; /* Slightly larger for better readability without image */
+			}
+			.weekly-excerpt {
+				font-size: 0.95em;
+				display: -webkit-box;
+				-webkit-line-clamp: 4; /* Show a bit more text */
+				-webkit-box-orient: vertical;
+				overflow: hidden;
+				margin-bottom: 25px; /* More space before button */
+			}
+			.weekly-button {
+				width: 100%;
+				text-align: center;
+			}
+		}
+	</style>
+
+	<section id="weekly-summary" class="weekly-summary-section">
 		<div class="container">
 			<div class="section-header">
 				<h2 class="section-title"><?php esc_html_e( '週間サマリー', 'logishift' ); ?></h2>
@@ -144,28 +246,28 @@ get_header();
 					while ( $weekly_query->have_posts() ) :
 						$weekly_query->the_post();
 						?>
-						<article id="post-<?php the_ID(); ?>" <?php post_class( 'weekly-hero-card' ); ?> style="display: flex; gap: 30px; align-items: center; background: #fff; padding: 30px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
-							<div class="weekly-thumbnail" style="flex: 1; max-width: 50%;">
+						<article id="post-<?php the_ID(); ?>" <?php post_class( 'weekly-hero-card' ); ?>>
+							<div class="weekly-thumbnail">
 								<?php if ( has_post_thumbnail() ) : ?>
 									<a href="<?php the_permalink(); ?>">
-										<?php the_post_thumbnail( 'large', array( 'style' => 'width: 100%; height: auto; border-radius: 8px;' ) ); ?>
+										<?php the_post_thumbnail( 'large' ); ?>
 									</a>
 								<?php else : ?>
 									<a href="<?php the_permalink(); ?>"><div class="no-image" style="background-color: #eee; height: 250px; border-radius: 8px;"></div></a>
 								<?php endif; ?>
 							</div>
-							<div class="weekly-content" style="flex: 1;">
-								<div class="article-meta" style="margin-bottom: 15px; color: #666; font-size: 0.9em;">
-									<span class="cat-label" style="background: #2c3e50; color: #fff; padding: 4px 10px; border-radius: 20px; font-size: 0.8em; margin-right: 10px;">Weekly Summary</span>
+							<div class="weekly-content">
+								<div class="weekly-meta">
+									<span class="weekly-label">Weekly Summary</span>
 									<span class="posted-on"><?php echo get_the_date(); ?></span>
 								</div>
-								<h3 class="weekly-title" style="font-size: 1.8em; margin-bottom: 15px; line-height: 1.4;">
-									<a href="<?php the_permalink(); ?>" style="text-decoration: none; color: #333;"><?php the_title(); ?></a>
+								<h3 class="weekly-title">
+									<a href="<?php the_permalink(); ?>"><?php the_title(); ?></a>
 								</h3>
-								<div class="weekly-excerpt" style="font-size: 1em; color: #555; line-height: 1.6; margin-bottom: 20px;">
+								<div class="weekly-excerpt">
 									<?php the_excerpt(); ?>
 								</div>
-								<a href="<?php the_permalink(); ?>" class="button" style="background: #e67e22; color: #fff; padding: 10px 25px; text-decoration: none; border-radius: 5px; font-weight: bold;">
+								<a href="<?php the_permalink(); ?>" class="weekly-button">
 									<?php esc_html_e( 'サマリーを読む', 'logishift' ); ?>
 								</a>
 							</div>
