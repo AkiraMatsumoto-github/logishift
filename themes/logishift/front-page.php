@@ -123,6 +123,70 @@ get_header();
 			</div>
 		</div>
 	</section>
+	<!-- Weekly Summary Section -->
+	<section id="weekly-summary" class="weekly-summary-section" style="background-color: #f0f4f8; padding: 40px 0;">
+		<div class="container">
+			<div class="section-header">
+				<h2 class="section-title"><?php esc_html_e( '週間サマリー', 'logishift' ); ?></h2>
+			</div>
+
+			<div class="weekly-summary-container">
+				<?php
+				$weekly_args = array(
+					'category_name'  => 'weekly-summary',
+					'posts_per_page' => 1, // Focus on the latest one
+					'orderby'        => 'date',
+					'order'          => 'DESC',
+				);
+				$weekly_query = new WP_Query( $weekly_args );
+
+				if ( $weekly_query->have_posts() ) :
+					while ( $weekly_query->have_posts() ) :
+						$weekly_query->the_post();
+						?>
+						<article id="post-<?php the_ID(); ?>" <?php post_class( 'weekly-hero-card' ); ?> style="display: flex; gap: 30px; align-items: center; background: #fff; padding: 30px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+							<div class="weekly-thumbnail" style="flex: 1; max-width: 50%;">
+								<?php if ( has_post_thumbnail() ) : ?>
+									<a href="<?php the_permalink(); ?>">
+										<?php the_post_thumbnail( 'large', array( 'style' => 'width: 100%; height: auto; border-radius: 8px;' ) ); ?>
+									</a>
+								<?php else : ?>
+									<a href="<?php the_permalink(); ?>"><div class="no-image" style="background-color: #eee; height: 250px; border-radius: 8px;"></div></a>
+								<?php endif; ?>
+							</div>
+							<div class="weekly-content" style="flex: 1;">
+								<div class="article-meta" style="margin-bottom: 15px; color: #666; font-size: 0.9em;">
+									<span class="cat-label" style="background: #2c3e50; color: #fff; padding: 4px 10px; border-radius: 20px; font-size: 0.8em; margin-right: 10px;">Weekly Summary</span>
+									<span class="posted-on"><?php echo get_the_date(); ?></span>
+								</div>
+								<h3 class="weekly-title" style="font-size: 1.8em; margin-bottom: 15px; line-height: 1.4;">
+									<a href="<?php the_permalink(); ?>" style="text-decoration: none; color: #333;"><?php the_title(); ?></a>
+								</h3>
+								<div class="weekly-excerpt" style="font-size: 1em; color: #555; line-height: 1.6; margin-bottom: 20px;">
+									<?php the_excerpt(); ?>
+								</div>
+								<a href="<?php the_permalink(); ?>" class="button" style="background: #e67e22; color: #fff; padding: 10px 25px; text-decoration: none; border-radius: 5px; font-weight: bold;">
+									<?php esc_html_e( 'サマリーを読む', 'logishift' ); ?>
+								</a>
+							</div>
+						</article>
+						<?php
+					endwhile;
+					wp_reset_postdata();
+				else :
+					?>
+					<p style="text-align: center; color: #777;"><?php esc_html_e( '今週のサマリーはまだありません。', 'logishift' ); ?></p>
+				<?php endif; ?>
+			</div>
+			
+			<div style="text-align: right; margin-top: 24px;">
+				<a href="<?php echo esc_url( get_category_link( get_category_by_slug( 'weekly-summary' ) ) ); ?>" class="text-link-arrow">
+					<?php esc_html_e( 'バックナンバー一覧へ', 'logishift' ); ?> →
+				</a>
+			</div>
+		</div>
+	</section>
+
 
 	<!-- Popular Articles Section -->
 	<section id="popular-articles" class="popular-articles-section" style="background-color: var(--color-light-gray);">

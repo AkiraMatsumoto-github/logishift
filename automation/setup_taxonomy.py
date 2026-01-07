@@ -48,6 +48,11 @@ def create_categories(wp):
             "slug": "news-global",
             "description": "米国、中国、欧州など、世界の物流テック最前線をレポート。海外の最新スタートアップ動向、ユニコーン企業の戦略、クロスボーダーECのトレンドなど、日本の物流業界に影響を与えるグローバルニュースをいち早く解説します。"
         },
+        {
+            "name": "週間サマリー",
+            "slug": "weekly-summary",
+            "description": "物流業界の1週間の動きをまとめてチェック。主要ニュース、市況の変化、注目のプレスリリースなど、忙しいビジネスパーソンのために重要トピックを厳選して振り返ります。"
+        },
     ]
     
     print("Creating/Updating categories...")

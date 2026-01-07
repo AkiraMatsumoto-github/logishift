@@ -185,15 +185,13 @@ keyword: {keyword}
     html_content = markdown.markdown(content, extensions=['extra', 'nl2br', 'tables'])
     
     # Create Post
-    # Assuming category 'Weekly Report' exists or we just use default/uncategorized for now
-    # Ideally find or create a category. For now let's leave uncategorized or use 'News' if available?
-    # Let's search for a category "Weekly" or "News"
     cat_id = None
-    weekly_cat = wp.get_category_id("weekly-report")
+    # Use the 'weekly-summary' category created in setup_taxonomy.py
+    weekly_cat = wp.get_category_id("weekly-summary")
     if weekly_cat:
         cat_id = [weekly_cat]
     else:
-        # Fallback to News
+        # Fallback to News if weekly-summary not found (though it should exist now)
         news_cat = wp.get_category_id("news")
         if news_cat:
             cat_id = [news_cat]
