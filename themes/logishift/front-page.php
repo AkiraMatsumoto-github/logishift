@@ -209,7 +209,7 @@ get_header();
 				display: none; /* Hide image on mobile based on feedback */
 			}
 			.weekly-title {
-				font-size: 1.5em; /* Slightly larger for better readability without image */
+				font-size: 1.2em; /* Slightly larger for better readability without image */
 			}
 			.weekly-excerpt {
 				font-size: 0.95em;
