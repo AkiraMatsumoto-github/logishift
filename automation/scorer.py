@@ -83,7 +83,7 @@ BATCH_SCORING_PROMPT = SHARED_CRITERIA + """
 ]
 """
 
-def score_article(article, model_name="gemini-3-pro-preview", client=None):
+def score_article(article, model_name="gemini-3-flash-preview", client=None):
     """Score a single article using Gemini API."""
     
     if client is None:
@@ -146,7 +146,7 @@ def score_article(article, model_name="gemini-3-pro-preview", client=None):
             "relevance": "error"
         }
 
-def score_articles_batch(articles, model_name="gemini-3-pro-preview", client=None, start_id=0):
+def score_articles_batch(articles, model_name="gemini-3-flash-preview", client=None, start_id=0):
     """Score a batch of articles using Gemini API."""
     if not articles:
         return []
@@ -220,7 +220,7 @@ def main():
     parser.add_argument("--input", type=str, help="Path to JSON file with articles (from collector.py)", required=True)
     parser.add_argument("--threshold", type=int, default=80, help="Minimum score to pass (default: 80)")
     parser.add_argument("--output", type=str, help="Output file for scored articles (optional)")
-    parser.add_argument("--model", type=str, default="gemini-3-pro-preview", help="Gemini model to use")
+    parser.add_argument("--model", type=str, default="gemini-3-flash-preview", help="Gemini model to use")
     
     args = parser.parse_args()
     
