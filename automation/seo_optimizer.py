@@ -18,8 +18,8 @@ except ImportError:
 
 
 class SEOOptimizer:
-    def __init__(self):
-        self.gemini = GeminiClient()
+    def __init__(self, client=None):
+        self.gemini = client if client else GeminiClient()
     
     def generate_meta_description(self, title, content, keyword):
         """

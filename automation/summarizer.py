@@ -43,7 +43,7 @@ SUMMARIZATION_PROMPT = """あなたは物流業界のDXエバンジェリスト�
 """
 
 
-def summarize_article(content: str, title: str, model_name: str = "gemini-3-pro-preview") -> dict:
+def summarize_article(content: str, title: str, model_name: str = "gemini-3-flash-preview", client=None) -> dict:
     """
     Summarize article content and extract key facts.
     
@@ -51,6 +51,7 @@ def summarize_article(content: str, title: str, model_name: str = "gemini-3-pro-
         content: Article content
         title: Article title
         model_name: Gemini model to use
+        client: GeminiClient instance (optional)
     
     Returns:
         Dictionary with keys: summary, key_facts, logishift_angle
@@ -59,7 +60,8 @@ def summarize_article(content: str, title: str, model_name: str = "gemini-3-pro-
     
     
     try:
-        client = GeminiClient()
+        if client is None:
+            client = GeminiClient()
     except Exception as e:
         print(f"Error initializing GeminiClient: {e}")
         return {

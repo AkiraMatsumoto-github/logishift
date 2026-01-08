@@ -6,8 +6,8 @@ except ImportError:
     from gemini_client import GeminiClient
 
 class ArticleClassifier:
-    def __init__(self):
-        self.gemini = GeminiClient()
+    def __init__(self, client=None):
+        self.gemini = client if client else GeminiClient()
         
     def classify_article(self, title, content_summary):
         """
@@ -73,7 +73,7 @@ class ArticleClassifier:
         
         try:
             response = self.gemini.client.models.generate_content(
-                model='gemini-3-pro-preview',
+                model='gemini-3-flash-preview',
                 contents=prompt,
                 config={
                     'response_mime_type': 'application/json'
@@ -139,7 +139,7 @@ class ArticleClassifier:
 
         try:
             response = self.gemini.client.models.generate_content(
-                model='gemini-3-pro-preview',
+                model='gemini-3-flash-preview',
                 contents=prompt,
                 config={
                     'response_mime_type': 'text/plain'

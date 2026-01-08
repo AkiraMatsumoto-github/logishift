@@ -177,9 +177,13 @@ def main():
     
     # Schedule logic removed - defaulting to immediate publish
     
+    # Import generate_article_flow
+    from automation.generate_article import generate_article_flow
+
     # Initialize Classifier & Clients
     print("Initializing clients for generation...")
-    classifier = ArticleClassifier()
+    # Pass gemini_client to classifier
+    classifier = ArticleClassifier(client=gemini_client)
     # gemini_client is already initialized
     wp_client = WordPressClient()
 
@@ -231,12 +235,8 @@ def main():
         # Generate keyword
         keyword = article['title']
         
-        # Base command
-        cmd = [
-            sys.executable, os.path.join(base_dir, "generate_article.py"),
-            "--keyword", keyword,
-            "--type", article_type
-        ]
+        # Context preparation
+        context_json = None
         
         # News/Global articles: Context-based generation (URL reading + summarization)
         if article_type in ["news", "global"]:
@@ -247,11 +247,16 @@ def main():
                 article_content = extract_content(article['url'], article['source'])
                 
                 if article_content['content'] and "Error" not in article_content['title']:
-                    summary_data = summarize_article(article_content['content'], article['title'])
+                    # Pass gemini_client to summarizer
+                    summary_data = summarize_article(
+                        article_content['content'], 
+                        article['title'],
+                        client=gemini_client
+                    )
                     
-                    # Pass context as JSON string
+                    # Pass context as JSON string or Dict (generate_article_flow handles both, but let's pass context_json string to stay consistent with args, or dict)
+                    # The flow function handles both.
                     context_json = json.dumps(summary_data, ensure_ascii=False)
-                    cmd.extend(["--context", context_json])
                     print(f"Context created: {len(summary_data['summary'])} chars summary, {len(summary_data['key_facts'])} key facts")
                 else:
                     print("Warning: Failed to extract content, falling back to keyword-based generation")
@@ -262,14 +267,21 @@ def main():
             print("\n--- Keyword-based generation (traditional) ---")
             # Know/Buy/Do articles: No context (maintain current behavior)
         
-        if args.dry_run:
-            cmd.append("--dry-run")
+        # Call generate_article_flow directly
+        print(f"Calling generate_article_flow for {keyword}...")
         
-        # print(f"Scheduled for: {schedule_datetime}")
-
-            
-        subprocess.run(cmd)
-        count += 1
+        success = generate_article_flow(
+            keyword=keyword,
+            article_type=article_type,
+            dry_run=args.dry_run,
+            schedule=None,
+            context=context_json,
+            gemini_client=gemini_client,
+            wp_client=wp_client
+        )
+        
+        if success:
+            count += 1
         print("-" * 40)
 
 if __name__ == "__main__":

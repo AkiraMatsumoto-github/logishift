@@ -87,63 +87,46 @@ keyword: {keyword}
     except Exception as e:
         print(f"Warning: Failed to save local file: {e}")
 
-def main():
-    parser = argparse.ArgumentParser(description="Generate and post an article to WordPress.")
-    parser.add_argument('--keyword', type=str, required=True, help='Keyword for the article')
-    parser.add_argument('--type', type=str, default='know', choices=['know', 'buy', 'do', 'news', 'global'], help='Article type')
-    parser.add_argument('--dry-run', action='store_true', help='Generate content but do not post to WordPress')
-    parser.add_argument('--schedule', type=str, help='Schedule date (YYYY-MM-DD HH:MM or YYYY-MM-DD HH:MM:SS)')
-    parser.add_argument('--context', type=str, help='Article context for News/Global articles (JSON string, optional)')
-    
-    args = parser.parse_args()
+def generate_article_flow(keyword, article_type='know', dry_run=False, schedule=None, context=None, gemini_client=None, wp_client=None):
+    """
+    Main flow to generate and post an article.
+    Designed to be called from pipeline.py or main().
+    """
+    import os
     
     # Define output directory
-    import os
     OUTPUT_DIR = os.path.join(os.path.dirname(__file__), "generated_articles")
     if not os.path.exists(OUTPUT_DIR):
         os.makedirs(OUTPUT_DIR)
     
-    print(f"Starting article generation for keyword: {args.keyword} (Type: {args.type})")
+    print(f"Starting article generation for keyword: {keyword} (Type: {article_type})")
     
-    # 1. Initialize Clients
-    wp_client = None
-    try:
-        gemini = GeminiClient()
-        # Initialize WP client for reading (linking) even in dry-run
+    # 1. Initialize Clients (if not provided)
+    if gemini_client is None:
         try:
-            from wp_client import WordPressClient # Ensure class is available if not imported top-level
-        except ImportError:
-            pass # Already imported
-            
+            gemini = GeminiClient()
+        except Exception as e:
+            print(f"Failed to initialize Gemini Client: {e}")
+            return False
+    else:
+        gemini = gemini_client
+
+    if wp_client is None:
         try:
+            # Initialize WP client for reading (linking) even in dry-run
+            from automation.wp_client import WordPressClient
             wp_client = WordPressClient()
-            print("WordPress Client initialized (for reading/linking).")
+            print("WordPress Client initialized.")
+        except ImportError:
+             from wp_client import WordPressClient
+             wp_client = WordPressClient()
+             print("WordPress Client initialized.")
         except Exception as e:
             print(f"Warning: WordPress Client initialization failed: {e}. Internal linking will be skipped.")
             
-        if not args.dry_run and wp_client is None:
-             print("Error: WordPress credentials required for non-dry-run mode.")
-             sys.exit(1)
-            
-        # Assign to 'wp' for compatibility (though we use wp_client now)
-        wp = wp_client
-             
-    except Exception as e:
-        print(f"Failed to initialize Gemini Client: {e}")
-        sys.exit(1)
-        
-    # Parse context if provided
-    context = None
-    if args.context:
-        try:
-            context = json.loads(args.context)
-            print("Context-based generation mode")
-            print(f"  Summary: {context['summary'][:100]}...")
-            print(f"  Key facts: {len(context['key_facts'])} items")
-        except json.JSONDecodeError as e:
-            print(f"Warning: Invalid context JSON ({e}), falling back to keyword-based generation")
-    else:
-        print("Keyword-based generation mode")
+    if not dry_run and wp_client is None:
+         print("Error: WordPress credentials required for non-dry-run mode.")
+         return False
     
     # 1.5 Internal Linking Suggestions
     extra_instructions = None
@@ -156,11 +139,19 @@ def main():
             
             if candidates:
                 # Simple context for scoring
-                scoring_context = f"Keyword: {args.keyword}\nType: {args.type}"
-                if context:
-                    scoring_context += f"\nSummary: {context.get('summary', '')}"
+                scoring_context = f"Keyword: {keyword}\nType: {article_type}"
+                # Handle context if it's a dict (passed from pipeline) or load it if string
+                context_dict = context
+                if isinstance(context, str):
+                    try:
+                        context_dict = json.loads(context)
+                    except:
+                        pass
+                
+                if context_dict:
+                    scoring_context += f"\nSummary: {context_dict.get('summary', '')}"
                     
-                relevant_links = linker.score_relevance(args.keyword, scoring_context, candidates)
+                relevant_links = linker.score_relevance(keyword, scoring_context, candidates)
                 
                 if relevant_links:
                     print(f"Found {len(relevant_links)} relevant articles for linking.")
@@ -218,11 +209,19 @@ Select the most relevant ones (if any) and include them in the article using sta
 
     # 2. Generate Content
     print("Generating content with Gemini...")
-    generated_text = gemini.generate_article(args.keyword, article_type=args.type, context=context, extra_instructions=extra_instructions)
+    # Parse context string if needed
+    context_obj = context
+    if isinstance(context, str):
+        try:
+             context_obj = json.loads(context)
+        except:
+             pass
+
+    generated_text = gemini.generate_article(keyword, article_type=article_type, context=context_obj, extra_instructions=extra_instructions)
     
     if not generated_text:
         print("Failed to generate content.")
-        sys.exit(1)
+        return False
         
     title, content = parse_article_content(generated_text)
     
@@ -235,15 +234,16 @@ Select the most relevant ones (if any) and include them in the article using sta
     optimized_title = title
     
     try:
+        # Pass initialized client to SEOOptimizer
         try:
-            from seo_optimizer import SEOOptimizer
-        except ImportError:
             from automation.seo_optimizer import SEOOptimizer
+        except ImportError:
+            from seo_optimizer import SEOOptimizer
             
-        optimizer = SEOOptimizer()
+        optimizer = SEOOptimizer(client=gemini)
         
         # Generate Meta Description
-        meta_desc = optimizer.generate_meta_description(title, content, args.keyword)
+        meta_desc = optimizer.generate_meta_description(title, content, keyword)
         print(f"Meta Description: {meta_desc}")
         
         # Optimize Title
@@ -255,26 +255,23 @@ Select the most relevant ones (if any) and include them in the article using sta
         print(f"Warning: SEO Optimization failed: {e}")
 
     # 2.5 Generate Hero Image
-    # if gemini.use_vertex: # Allow for both Vertex and API Key
     print("Generating hero image...")
     
     # Generate contextual image prompt based on article content
     content_summary = content[:1000]  # Use first 1000 chars as summary
-    image_prompt = gemini.generate_image_prompt(title, content_summary, args.type)
+    image_prompt = gemini.generate_image_prompt(title, content_summary, article_type)
     print(f"Image prompt: {image_prompt}")
     
-    import os
-    output_dir = os.path.join(os.path.dirname(__file__), "generated_articles")
     date_str = datetime.now().strftime("%Y-%m-%d")
-    safe_keyword = re.sub(r'[\\/*?:"\<\>| ]', '_', args.keyword)
+    safe_keyword = re.sub(r'[\\/*?:"\<\>| ]', '_', keyword)
     image_filename = f"{date_str}_{safe_keyword}_hero.png"
-    image_path = os.path.join(output_dir, image_filename)
+    image_path = os.path.join(OUTPUT_DIR, image_filename)
     
     generated_image_path = gemini.generate_image(image_prompt, image_path, aspect_ratio="16:9")
     
     if generated_image_path:
         # Re-save the file (without inserting image into content)
-        save_to_file(title, content, args.keyword)
+        save_to_file(title, content, keyword)
         print(f"Hero image generated: {image_filename}")
     
     # 3. Classify Content
@@ -283,50 +280,42 @@ Select the most relevant ones (if any) and include them in the article using sta
     tag_ids = []
     
     try:
-        classifier = ArticleClassifier()
+        # Pass initialized client to ArticleClassifier
+        classifier = ArticleClassifier(client=gemini)
         classification = classifier.classify_article(title, content[:1000])
         print(f"Classification Result: {classification}")
-        
-        # Resolve IDs if not dry-run (or even in dry-run if we want to test lookup, but let's skip for speed)
-        # Actually, let's resolve them to verify logic if we have a client.
-        # But we initialize wp_client later. Let's initialize it earlier if needed.
-        # Or just do it in the posting block.
-        # Let's do it here if we want to print them in dry run?
-        # No, let's keep it simple. Just pass the classification dict to the posting block?
-        # No, create_post expects IDs.
-        # Let's initialize WP client here if we are going to post.
         
     except Exception as e:
         print(f"Classification failed: {e}")
         classification = {}
 
-    # 4. Generate AI Structured Summary (New)
+    # 4. Generate AI Structured Summary
     print("Generating AI Structured Summary...")
-    # Strip HTML for efficient token usage
     text_content_for_summary = re.sub('<[^<]+?>', '', content)
     structured_summary = gemini.generate_structured_summary(text_content_for_summary)
     
     if structured_summary:
         print("  - Structured summary generated.")
-        if args.dry_run:
+        if dry_run:
             print(f"  [Dry Run Preview] Summary: {structured_summary.get('summary')}")
             print(f"  [Dry Run Preview] Topics: {structured_summary.get('key_topics')}")
     else:
         print("  - Warning: Failed to generate structured summary.")
         structured_summary = None
 
-    if args.dry_run:
+    if dry_run:
         print("Dry run mode. Skipping WordPress posting.")
         print("--- Preview ---")
         print(f"Title: {optimized_title}")
         print(f"Meta Description: {meta_desc}")
         print(content[:500] + "...")
-        return
+        return True
 
     # 5. Post to WordPress
     print("Posting to WordPress...")
     try:
-        wp = WordPressClient()
+        # Use injected client
+        wp = wp_client
         
         # Resolve Categories and Tags
         if classification:
@@ -347,9 +336,9 @@ Select the most relevant ones (if any) and include them in the article using sta
         featured_media_id = None
 
         # Upload generated hero image explicitly
-        if 'generated_image_path' in locals() and generated_image_path and os.path.exists(generated_image_path):
+        if generated_image_path and os.path.exists(generated_image_path):
             print(f"Uploading hero image to WordPress: {image_filename}")
-            media_result = wp.upload_media(generated_image_path, alt_text=args.keyword)
+            media_result = wp.upload_media(generated_image_path, alt_text=keyword)
             if media_result and 'id' in media_result:
                 featured_media_id = media_result['id']
                 print(f"Set as featured media ID: {featured_media_id}")
@@ -366,7 +355,7 @@ Select the most relevant ones (if any) and include them in the article using sta
                 image_path = os.path.join(OUTPUT_DIR, match_filename)
                 if os.path.exists(image_path):
                     print(f"Uploading image to WordPress: {match_filename}")
-                    media_result = wp.upload_media(image_path, alt_text=alt_text or args.keyword)
+                    media_result = wp.upload_media(image_path, alt_text=alt_text or keyword)
                     if media_result and 'source_url' in media_result:
                         # Replace local path with WordPress URL
                         content = content.replace(f']({match_filename})', f']({media_result["source_url"]})')
@@ -380,35 +369,32 @@ Select the most relevant ones (if any) and include them in the article using sta
                         print(f"Failed to upload image: {match_filename}")
 
 
-        # Clean up HTML tags that Gemini might insert (especially <br> in tables)
-        # Replace <br> with space to avoid breaking table syntax
+        # Clean up HTML tags
         content = re.sub(r'<br\s*/?>\s*', ' ', content)
-        # Remove any other HTML tags (but keep the content)
         content = re.sub(r'<([^>]+)>', '', content)
         
-        # Convert Markdown to HTML (tables will be properly converted)
+        # Convert Markdown to HTML
         html_content = markdown.markdown(content, extensions=['extra', 'nl2br', 'tables'])
         
         # Determine status and date
-        if args.schedule:
+        if schedule:
             try:
-                schedule_date = parse_schedule_date(args.schedule)
+                schedule_date = parse_schedule_date(schedule)
                 status = "future"
                 print(f"Scheduling post for: {schedule_date}")
             except ValueError as e:
                 print(f"Error: {e}")
-                sys.exit(1)
+                return False
         else:
             schedule_date = None
             status = "publish"
         
-        # Prepare metadata for SEO plugins (Yoast/All in One SEO)
+        # Prepare metadata
         meta_fields = {}
         if meta_desc:
             meta_fields["_yoast_wpseo_metadesc"] = meta_desc
-            # meta_fields["_aioseop_description"] = meta_desc # Uncomment if using AIOSEO
 
-        if 'structured_summary' in locals() and structured_summary:
+        if structured_summary:
             meta_fields["ai_structured_summary"] = json.dumps(structured_summary, ensure_ascii=False)
 
         result = wp.create_post(
@@ -428,8 +414,7 @@ Select the most relevant ones (if any) and include them in the article using sta
             print(f"Link: {result.get('link')}")
             
             # --- SNS Posting (X/Twitter) ---
-            # Only post if status is 'publish' (not 'future' or 'draft')
-            if status == "publish" and not args.dry_run:
+            if status == "publish" and not dry_run:
                 try:
                     try:
                         from automation.sns_client import SNSClient
@@ -440,10 +425,9 @@ Select the most relevant ones (if any) and include them in the article using sta
                     
                     if sns.x_client:
                         print("Generating SNS content...")
-                        sns_content_data = gemini.generate_sns_content(optimized_title, content, args.type)
+                        sns_content_data = gemini.generate_sns_content(optimized_title, content, article_type)
                         
                         if sns_content_data:
-                            # Construct post text
                             post_text = f"【新着記事】\n{sns_content_data.get('hook', optimized_title)}\n\n"
                             post_text += f"{sns_content_data.get('summary', '')}\n\n"
                             
@@ -461,50 +445,40 @@ Select the most relevant ones (if any) and include them in the article using sta
                         else:
                              print("Failed to generate SNS content data.")
                     else:
-                        print("Skipping X post: Client not authenticated (Check .env)")
+                        print("Skipping X post: Client not authenticated")
                         
                 except Exception as e:
                     print(f"SNS Posting failed: {e}")
             # -------------------------------
+            return True
         else:
             print("Failed to create post.")
+            return False
 
     except Exception as e:
         print(f"Failed to post to WordPress: {e}")
+        return False
 
-
-
-def save_to_file(title, content, keyword):
-    """Save the article to a local markdown file."""
-    import os
+def main():
+    parser = argparse.ArgumentParser(description="Generate and post an article to WordPress.")
+    parser.add_argument('--keyword', type=str, required=True, help='Keyword for the article')
+    parser.add_argument('--type', type=str, default='know', choices=['know', 'buy', 'do', 'news', 'global'], help='Article type')
+    parser.add_argument('--dry-run', action='store_true', help='Generate content but do not post to WordPress')
+    parser.add_argument('--schedule', type=str, help='Schedule date (YYYY-MM-DD HH:MM or YYYY-MM-DD HH:MM:SS)')
+    parser.add_argument('--context', type=str, help='Article context for News/Global articles (JSON string, optional)')
     
-    # Create directory if not exists
-    output_dir = os.path.join(os.path.dirname(__file__), "generated_articles")
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
-        
-    # Format filename: YYYY-MM-DD_keyword.md
-    date_str = datetime.now().strftime("%Y-%m-%d")
-    safe_keyword = re.sub(r'[\\/*?:"<>| ]', '_', keyword)
-    filename = f"{date_str}_{safe_keyword}.md"
-    filepath = os.path.join(output_dir, filename)
+    args = parser.parse_args()
     
-    # Add frontmatter
-    file_content = f"""---
-title: {title}
-date: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
-keyword: {keyword}
----
-
-{content}
-"""
+    success = generate_article_flow(
+        keyword=args.keyword,
+        article_type=args.type,
+        dry_run=args.dry_run,
+        schedule=args.schedule,
+        context=args.context
+    )
     
-    try:
-        with open(filepath, 'w', encoding='utf-8') as f:
-            f.write(file_content)
-        print(f"Saved local copy to: {filepath}")
-    except Exception as e:
-        print(f"Warning: Failed to save local file: {e}")
+    if not success:
+        sys.exit(1)
 
 if __name__ == "__main__":
     main()
