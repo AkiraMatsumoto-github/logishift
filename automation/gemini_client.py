@@ -754,13 +754,15 @@ class GeminiClient:
             print(f"Structured summary generation failed: {e}")
             return None
 
-    def generate_sns_content(self, title, content, article_type="know"):
+    def generate_sns_content(self, title, content, article_type="know", url=None):
         """
         Generate engaging SNS (Twitter/X) post content.
-        Output is JSON: {"hook": "...", "summary": "...", "hashtags": ["#tag1", ...]}
+        Output is JSON: {"hook": "...", "summary": "...", "hashtags": ["#tag1", ...], "url_text": "..."}
         """
         # Truncate content for efficiency
         truncated_content = content[:3000]
+        
+        url_context = f"Article URL: {url}" if url else "Article URL: (Will be added later)"
         
         prompt = textwrap.dedent(f"""
         You are an expert social media manager for a logistics media site "LogiShift".
@@ -771,6 +773,7 @@ class GeminiClient:
 
         Article Title: {title}
         Article Type: {article_type}
+        {url_context}
         Content (excerpt):
         {truncated_content}
 
@@ -781,18 +784,22 @@ class GeminiClient:
         2. **Summary**: A compelling teaser. Do NOT just summarize("〜について解説"). Explain "Why this matters" or "What they will lose by not reading".
            - Focus on benefits (cost down, efficiency up, risk avoidance).
            - Max 100 chars.
-        3. **Hashtags**: 3-5 relevant hashtags.
+        3. **Hashtags**: 5 relevant hashtags.
            - **CRITICAL**: To maximize Impressions (Imp), PRIORITIZE using **specific proper nouns** (Company names, Product names, Technology names) mentioned in the article content over generic terms.
            - Example: Use "#Amazon" or "#RFID" instead of generic tags.
+        4. **URL Line**: Create a short call-to-action line including the Article URL (if provided).
+           - Example: "詳細はこちら: https://..." or "今すぐチェック 👇\nhttps://..."
+           - If no URL is provided, leave this empty.
 
-        4. Language: Japanese. 
-        5. **Tone**: Professional but urgent/exciting. Avoid robotic or purely descriptive tone.
+        5. Language: Japanese. 
+        6. **Tone**: Professional but urgent/exciting. Avoid robotic or purely descriptive tone.
 
         Output JSON format (Strictly JSON only):
         {{
             "hook": "😱 2024年問題、実はまだ間に合う？",
             "summary": "「もう手遅れ」と諦めるのは早い。現場がすぐ取り組める3つの即効策を公開。知らないと損する物流DXの最前線とは？",
-            "hashtags": ["#LogiShift", "#Amazon", "#RFID", "#物流DX"]
+            "url_text": "詳細はこちら: https://...",
+            "hashtags": ["#Amazon", "#RFID", "#物流DX"]
         }}
         """)
         
@@ -811,7 +818,7 @@ class GeminiClient:
             print(f"SNS content generation failed: {e}")
             # Fallback
             return {
-                "hook": f"【新着記事】{title}",
+                "hook": f"{title}",
                 "summary": "最新の物流トレンドを解説しました。詳細はこちらをチェック！",
                 "hashtags": ["#LogiShift", "#物流"]
             }

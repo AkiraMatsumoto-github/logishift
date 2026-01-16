@@ -425,17 +425,28 @@ Select the most relevant ones (if any) and include them in the article using sta
                     
                     if sns.x_client:
                         print("Generating SNS content...")
-                        sns_content_data = gemini.generate_sns_content(optimized_title, content, article_type)
+                        # Pass URL to generate_sns_content
+                        link = result.get('link')
+                        sns_content_data = gemini.generate_sns_content(optimized_title, content, article_type, url=link)
                         
                         if sns_content_data:
-                            post_text = f"【新着記事】\n{sns_content_data.get('hook', optimized_title)}\n\n"
+                            post_text = f"{sns_content_data.get('hook', optimized_title)}\n\n"
                             post_text += f"{sns_content_data.get('summary', '')}\n\n"
+
+                            # Use url_text from AI if available, otherwise append link manually
+                            url_text = sns_content_data.get('url_text')
+                            if url_text:
+                                post_text += url_text
+                            else:
+                                post_text += link
+                            
+                            post_text += "\n\n"
                             
                             tags = sns_content_data.get('hashtags', [])
                             if tags:
                                 post_text += " ".join(tags) + "\n\n"
-                                
-                            post_text += result.get('link')
+                            
+
                             
                             print("--------------------------------------------------")
                             print(f"Posting to X:\n{post_text}")
