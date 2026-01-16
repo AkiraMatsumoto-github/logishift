@@ -457,6 +457,23 @@ Select the most relevant ones (if any) and include them in the article using sta
                              print("Failed to generate SNS content data.")
                     else:
                         print("Skipping X post: Client not authenticated")
+
+                    # --- Threads Posting ---
+                    if sns.threads_client:
+                        print("Posting to Threads...")
+                        # Threads usually has more character limit, so we can use the same text
+                        # or potentially a longer version if we had one.
+                        # For now, we use the exact same text as X for consistency and simplicity.
+                        # Note: Threads API will auto-preview the link in the text.
+                        
+                        if sns_content_data:
+                             # Re-construct text if needed, or just reuse post_text
+                             # (post_text includes URL)
+                             sns.post_to_threads(post_text)
+                        else:
+                             print("Skipping Threads post: No content data.")
+                    else:
+                         print("Skipping Threads post: Client not authenticated")
                         
                 except Exception as e:
                     print(f"SNS Posting failed: {e}")
