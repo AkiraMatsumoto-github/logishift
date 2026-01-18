@@ -10,7 +10,7 @@ class ThreadsClient:
         
         if not self.user_id or not self.access_token:
             print("Threads credentials missing. Skiping initialization.")
-            self.valild = False
+            self.valid = False
         else:
             self.valid = True
             print("Threads Client initialized.")

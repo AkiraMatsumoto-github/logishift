@@ -196,7 +196,7 @@ Select the most relevant ones (if any) and include them in the article using sta
 1. PRIORITIZE specific, high-relevance articles.
 2. Format options:
    - Inline: ... as discussed in [Topic Name](URL)...
-   - Block: See also: [Title](URL) at the end of sections.
+   - Block: 併せて読む: [Title](URL) at the end of sections.
 3. If no article is strictly relevant, do not force a link.
 """
                 else:
