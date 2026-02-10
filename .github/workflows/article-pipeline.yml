@@ -39,6 +39,9 @@ jobs:
           X_ACCESS_TOKEN_SECRET: ${{ secrets.X_ACCESS_TOKEN_SECRET }}
           # Google Cloud / Gemini
           GOOGLE_CLOUD_LOCATION: "global"
+          # Threads Credentials
+          THREADS_USER_ID: ${{ secrets.THREADS_USER_ID }}
+          THREADS_ACCESS_TOKEN: ${{ secrets.THREADS_ACCESS_TOKEN }}
         run: |
           cd automation
           python pipeline.py --hours 12 --threshold 75 --limit 2
