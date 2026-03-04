@@ -2,9 +2,9 @@ name: Article Generation Pipeline
 
 on:
   schedule:
-    # 12時間ごとに実行 (0:00, 12:00 UTC)
-    # 日本時間では 9:00, 21:00
-    - cron: '0 */12 * * *'
+    # 1日3回実行 (0:00, 6:00, 12:00 UTC)
+    # 日本時間では 9:00, 15:00, 21:00
+    - cron: '0 0,6,12 * * *'
   workflow_dispatch: # 手動実行も可能
 
 jobs:
