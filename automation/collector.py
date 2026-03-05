@@ -26,6 +26,12 @@ DEFAULT_SOURCES = {
     "supply_chain_asia": "https://supplychainasia.org/feed/",
     "weekly_net": "https://weekly-net.co.jp/feed/",
     "merkmal_biz": "https://merkmal-biz.jp/feed",
+    "google_alert_major_logi": "https://www.google.co.jp/alerts/feeds/09915549032368953872/10911163253318719464",
+    "google_alert_major_shipper": "https://www.google.co.jp/alerts/feeds/09915549032368953872/4965377434011334564",
+    "google_alert_material_handling": "https://www.google.co.jp/alerts/feeds/09915549032368953872/9496477745545756021",
+    "google_alert_developer": "https://www.google.co.jp/alerts/feeds/09915549032368953872/9496477745545755295",
+    "google_alert_cross_industry": "https://www.google.co.jp/alerts/feeds/09915549032368953872/2968557078296725271",
+    "google_alert_3pl": "https://www.google.co.jp/alerts/feeds/09915549032368953872/14418106855303433847"
 }
 
 def fetch_rss(url, source_name, days=None, hours=None):
@@ -79,9 +85,19 @@ def fetch_rss(url, source_name, days=None, hours=None):
             is_recent = True
 
         if is_recent:
+            url_to_save = entry.link
+            
+            # Google Alerts API specific parsing (extract original URL from redirect)
+            if "google.com/url?q=" in url_to_save or "google.co.jp/url?q=" in url_to_save:
+                from urllib.parse import urlparse, parse_qs
+                parsed_url = urlparse(url_to_save)
+                query_params = parse_qs(parsed_url.query)
+                if 'q' in query_params:
+                    url_to_save = query_params['q'][0]
+
             articles.append({
                 "title": entry.title,
-                "url": entry.link,
+                "url": url_to_save,
                 "published": str(published_parsed) if published_parsed else "Unknown",
                 "source": source_name,
                 "summary": entry.summary if hasattr(entry, 'summary') else ""
