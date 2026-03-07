@@ -1300,6 +1300,8 @@ section {
 .entry-content table td {
     padding: var(--spacing-md);
     border-bottom: 1px solid var(--color-border-gray);
+    border-left: none !important;
+    border-right: none !important;
     font-size: 0.95rem;
     line-height: 1.6;
     white-space: normal;
@@ -1320,6 +1322,9 @@ section {
     font-size: 0.95rem;
     letter-spacing: 0.02em;
     white-space: nowrap;
+    border-left: none !important;
+    border-right: none !important;
+    border-top: none !important;
     /* Keep headers on one line to set natural column width */
 }
 
