@@ -2088,51 +2088,266 @@ section {
 }
 
 .nav-item {
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    padding: var(--spacing-md) var(--spacing-lg);
-    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.08);
+    /* 視認性向上のため少し濃く */
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    padding: 16px 20px;
+    border-radius: 14px;
     color: var(--color-white);
     text-decoration: none;
     display: flex;
     align-items: center;
-    gap: 12px;
-    transition: all 0.3s ease;
+    gap: 16px;
+    /* アイコンとテキストの間隔を広げる */
+    transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
     flex: 1;
-    min-width: 250px;
-    max-width: 320px;
+    min-width: 280px;
+    max-width: 340px;
+    position: relative;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .nav-item:hover {
-    background: rgba(255, 255, 255, 0.2);
-    transform: translateY(-4px);
-    border-color: var(--color-tech-blue);
+    background: rgba(255, 255, 255, 0.15);
+    transform: translateY(-5px);
+    border-color: rgba(72, 202, 228, 0.6);
+    box-shadow: 0 12px 30px rgba(0, 180, 216, 0.25);
+}
+
+/* アイコン＋タイトルを横並びにする内部ラッパー */
+.nav-item-main {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
 }
 
 .nav-icon {
-    font-size: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    flex-shrink: 0;
+}
+
+.nav-icon-svg {
+    color: var(--color-tech-blue);
+    opacity: 0.8;
+    transition: all 0.3s ease;
+}
+
+.nav-item:hover .nav-icon-svg {
+    color: #fff;
+    opacity: 1;
+    transform: scale(1.1);
+    filter: drop-shadow(0 0 8px rgba(0, 180, 216, 0.5));
 }
 
 .nav-item span {
     font-weight: 700;
-    line-height: 1.3;
-    font-size: 1.1rem;
+    line-height: 1.2;
+    font-size: 1.05rem;
     text-align: left;
+    color: rgba(255, 255, 255, 0.95);
 }
 
 .nav-item small {
     display: block;
     font-size: 0.75rem;
     font-weight: 400;
-    opacity: 0.8;
-    margin-top: 2px;
+    opacity: 0.7;
+    margin-top: 4px;
 }
 
-/* 3. Theme Sections */
-.portal-content-area {
-    margin-top: var(--spacing-xl);
+/* スクロール誘導：右端のボタン（正円に固定） */
+.nav-scroll-hint {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 32px;
+    /* 固定サイズ */
+    height: 32px;
+    /* 固定サイズ */
+    border-radius: 50%;
+    /* 正円 */
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    margin-left: auto;
+    /* 右端に寄せる */
+    transition: all 0.2s ease;
+}
+
+.nav-scroll-arrow {
+    stroke: rgba(255, 255, 255, 0.7);
+    animation: scrollBounce 2s ease-in-out infinite;
+}
+
+.nav-item:hover .nav-scroll-hint {
+    background: var(--color-tech-blue);
+    border-color: var(--color-tech-blue);
+    transform: scale(1.1);
+}
+
+.nav-item:hover .nav-scroll-arrow {
+    stroke: #fff;
+    animation-play-state: paused;
+}
+
+@keyframes scrollBounce {
+
+    0%,
+    100% {
+        transform: translateY(-1px);
+    }
+
+    50% {
+        transform: translateY(2px);
+    }
+}
+
+/* 4. Footer Summary Section */
+.portal-cta {
+    margin-top: 60px;
+    padding-bottom: 80px;
+}
+
+.summary-container {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    padding: 40px;
+}
+
+.summary-container h2 {
+    font-size: 1.6rem;
+    margin-bottom: 40px;
+    text-align: left;
+    color: #fff;
+    border-left: 4px solid var(--color-tech-blue);
+    padding-left: 15px;
+    line-height: 1.3;
+}
+
+.summary-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 30px;
+    position: relative;
+}
+
+.summary-item {
+    background: transparent;
+    padding: 0 0 0 20px;
+    border-left: 1px solid rgba(255, 255, 255, 0.1);
+    position: relative;
+}
+
+/* タイムライン効果用のドット */
+.summary-item::before {
+    content: '';
+    position: absolute;
+    left: -4px;
+    top: 8px;
+    width: 7px;
+    height: 7px;
+    background: var(--color-tech-blue);
+    border-radius: 50%;
+    box-shadow: 0 0 8px var(--color-tech-blue);
+}
+
+.summary-item h3 {
+    font-size: 1.1rem;
+    color: var(--color-tech-blue);
+    margin-bottom: 12px;
+    font-weight: 600;
+    line-height: 1.4;
+}
+
+/* 不要になった古いドットを隠す */
+.summary-item .dot {
+    display: none;
+}
+
+.summary-item p {
+    font-size: 0.92rem;
+    line-height: 1.6;
+    color: rgba(255, 255, 255, 0.7);
+    margin: 0;
+    text-align: left;
+}
+
+@media (max-width: 992px) {
+    .summary-grid {
+        grid-template-columns: 1fr;
+        gap: 30px;
+    }
+}
+
+@media (max-width: 768px) {
+    .portal-cta {
+        margin-top: 40px;
+        padding-bottom: 40px;
+    }
+
+    /* モバイル時は入れ子（カード内カード）を解消し、フラットにする */
+    .summary-container {
+        padding: 0;
+        background: transparent;
+        border: none;
+    }
+
+    .summary-container h2 {
+        font-size: 1.25rem;
+        margin-bottom: 25px;
+        padding-left: 12px;
+        color: var(--color-navy) !important;
+        /* 強制的にネイビーへ */
+    }
+
+    /* タイムラインの縦線を消して横幅を稼ぐ */
+    .summary-item {
+        padding-left: 0;
+        border-left: none;
+        margin-bottom: 5px;
+    }
+
+    /* 線を消す代わりに、擬似要素をドットとして見出し横に配置 */
+    .summary-item::before {
+        display: none;
+        /* 縦線に依存する位置にあるドットを消す */
+    }
+
+    .summary-item h3 {
+        font-size: 1.05rem;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    /* 見出し横のドットとして再定義 */
+    .summary-item h3::before {
+        content: '';
+        display: block;
+        width: 6px;
+        height: 6px;
+        background: var(--color-tech-blue);
+        border-radius: 50%;
+        box-shadow: 0 0 8px var(--color-tech-blue);
+        flex-shrink: 0;
+    }
+
+    .summary-item p {
+        font-size: 0.9rem;
+        padding-left: 14px;
+        /* ドットの分だけ少し下を下げる（インデント） */
+        color: #475569;
+        /* 白背景で見えるように濃いグレーに変更 */
+    }
 }
 
 .portal-theme-section {
@@ -2182,7 +2397,26 @@ section {
     line-height: 1.7;
 }
 
-/* 4. Cards Grid */
+/* 5. Footer Summary Section (Final Flat Design) */
+.portal-cta {
+    background: var(--color-navy);
+    color: var(--color-white);
+    padding: var(--spacing-2xl);
+    border-radius: 16px;
+    margin-top: var(--spacing-2xl);
+}
+
+@media (max-width: 768px) {
+    .portal-cta {
+        margin-top: 40px;
+        padding: 0;
+        background: transparent;
+        border: none;
+        border-radius: 0;
+    }
+}
+
+/* 4. Cards Grid & Smart Mobile Links */
 .portal-cards-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
@@ -2202,16 +2436,33 @@ section {
     height: 100%;
 }
 
+@media (max-width: 768px) {
+    .portal-cards-grid {
+        gap: 12px;
+    }
+
+    .portal-card {
+        flex-direction: row;
+        border: none;
+        border-bottom: 1px solid #e2e8f0;
+        border-radius: 0;
+        padding: 12px 0;
+        background: transparent;
+    }
+}
+
 .portal-card:not(.disabled):hover {
     transform: translateY(-6px);
     box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
     border-color: var(--color-tech-blue);
 }
 
-.portal-card.disabled {
-    cursor: default;
-    opacity: 0.7;
-    background: #f8fafc;
+@media (max-width: 768px) {
+    .portal-card:not(.disabled):hover {
+        transform: none;
+        box-shadow: none;
+        background: rgba(var(--color-tech-blue-rgb), 0.05);
+    }
 }
 
 .card-visual {
@@ -2222,31 +2473,11 @@ section {
     padding: var(--spacing-md);
 }
 
-.us-bg {
-    background: linear-gradient(135deg, #FF416C 0%, #FF4B2B 100%);
-}
-
-.eu-bg {
-    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
-}
-
-.global-bg {
-    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-}
-
-.empty-bg {
-    background: #cbd5e1;
-}
-
-.card-type-tag {
-    background: rgba(255, 255, 255, 0.95);
-    color: var(--color-navy);
-    padding: 4px 12px;
-    border-radius: 4px;
-    font-size: 0.75rem;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+@media (max-width: 768px) {
+    .card-visual {
+        display: none;
+        /* スマホでは画像を潔くカットしてスマートに */
+    }
 }
 
 .card-body {
@@ -2256,6 +2487,12 @@ section {
     flex: 1;
 }
 
+@media (max-width: 768px) {
+    .card-body {
+        padding: 0 8px;
+    }
+}
+
 .card-body h3 {
     font-size: 1.25rem;
     line-height: 1.5;
@@ -2263,8 +2500,16 @@ section {
     color: var(--color-navy);
 }
 
-.portal-card:not(.disabled):hover h3 {
-    color: var(--color-tech-blue);
+@media (max-width: 768px) {
+    .card-body h3 {
+        font-size: 1.05rem;
+        margin-bottom: 4px;
+        line-height: 1.4;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
 }
 
 .card-body p {
@@ -2275,25 +2520,24 @@ section {
     flex: 1;
 }
 
+@media (max-width: 768px) {
+    .card-body p {
+        display: none;
+        /* スマホでは抜粋を非表示にしてスキャン性を最大化 */
+    }
+}
+
 .card-action {
     font-weight: 700;
     color: var(--color-tech-blue);
     font-size: 0.95rem;
 }
 
-.portal-custom-content {
-    grid-column: 1 / -1;
-    margin-top: var(--spacing-md);
-}
-
-/* 5. Footer CTA */
-.portal-cta {
-    background: var(--color-navy);
-    color: var(--color-white);
-    padding: var(--spacing-2xl);
-    border-radius: 16px;
-    text-align: center;
-    margin-top: var(--spacing-2xl);
+@media (max-width: 768px) {
+    .card-action {
+        font-size: 0.85rem;
+        margin-top: 4px;
+    }
 }
 
 .portal-cta h2 {

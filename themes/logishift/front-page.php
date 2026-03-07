@@ -289,7 +289,6 @@ get_header();
 		</div>
 	</section>
 
-
 	<!-- Popular Articles Section -->
 	<section id="popular-articles" class="popular-articles-section" style="background-color: var(--color-light-gray);">
 		<div class="container">
@@ -349,6 +348,214 @@ get_header();
 			</div>
 		</div>
 	</section>
+
+	<!-- ============================================
+		課題解決ナビ（プレミアムガイド）セクション ← 人気記事の下
+		※ ピラーページが増えたら $pillar_guides 配列に追加するだけでOK
+	============================================ -->
+	<style>
+		/* ===== Pillar Guide Section – シンプルタイル型 ===== */
+		.pillar-guide-section {
+			background: linear-gradient(160deg, #07111f 0%, #0e2039 55%, #091828 100%);
+			padding: 60px 0 68px;
+			position: relative;
+			overflow: hidden;
+		}
+		.pillar-guide-section::before,
+		.pillar-guide-section::after {
+			content: '';
+			position: absolute;
+			pointer-events: none;
+			border-radius: 50%;
+		}
+		.pillar-guide-section::before {
+			width: 500px; height: 500px;
+			top: -180px; right: -100px;
+			background: radial-gradient(circle, rgba(0,140,255,0.09) 0%, transparent 70%);
+		}
+		.pillar-guide-section::after {
+			width: 380px; height: 380px;
+			bottom: -140px; left: -60px;
+			background: radial-gradient(circle, rgba(0,220,180,0.06) 0%, transparent 70%);
+		}
+		.pillar-guide-section .section-title   { color: #fff; }
+		.pillar-guide-section .section-description { color: rgba(255,255,255,0.55); }
+
+		/* Premium Guide ラベル */
+		.pillar-guide-label-wrap { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+		.pillar-guide-label {
+			display: inline-flex; align-items: center; gap: 5px;
+			background: linear-gradient(90deg, #0094d4, #0050a0);
+			color: #fff; font-size: 0.68em; font-weight: 800;
+			letter-spacing: 0.12em; padding: 4px 12px;
+			border-radius: 30px; text-transform: uppercase;
+		}
+
+		/* タイルグリッド（2〜4列対応） */
+		.pillar-guide-grid {
+			display: grid;
+			grid-template-columns: repeat(3, 1fr);
+			gap: 16px;
+			margin-top: 32px;
+		}
+		@media (max-width: 900px) {
+			.pillar-guide-grid { grid-template-columns: repeat(2, 1fr); }
+		}
+		@media (max-width: 560px) {
+			.pillar-guide-grid { grid-template-columns: 1fr; gap: 12px; }
+		}
+
+		/* カードタイル */
+		.pillar-guide-card {
+			display: flex;
+			flex-direction: column;
+			background: rgba(255,255,255,0.05);
+			border: 1px solid rgba(255,255,255,0.10);
+			border-left: 4px solid #0077cc;
+			border-radius: 12px;
+			padding: 20px 22px;
+			text-decoration: none;
+			transition: transform 0.2s, background 0.2s, box-shadow 0.2s;
+			-webkit-tap-highlight-color: transparent;
+			position: relative;
+		}
+		.pillar-guide-card:hover,
+		.pillar-guide-card:focus {
+			transform: translateY(-3px);
+			background: rgba(255,255,255,0.08);
+			box-shadow: 0 10px 32px rgba(0,0,0,0.45);
+		}
+		/* GUIDE スタンプ（右上） */
+		.pillar-guide-card-stamp {
+			position: absolute;
+			top: 14px; right: 14px;
+			background: rgba(0,0,0,0.55);
+			border: 1px solid rgba(0,170,255,0.4);
+			color: #00aaff;
+			font-size: 0.6em; font-weight: 900;
+			letter-spacing: 0.14em;
+			padding: 3px 8px; border-radius: 5px;
+			text-transform: uppercase;
+		}
+		.pillar-guide-card-tag {
+			font-size: 0.68em; font-weight: 800;
+			letter-spacing: 0.08em; color: #00aaff;
+			text-transform: uppercase; margin-bottom: 8px;
+		}
+		.pillar-guide-card-title {
+			font-size: 0.95em; font-weight: 700;
+			color: #fff; line-height: 1.55;
+			margin: 0 0 10px;
+		}
+		.pillar-guide-card-desc {
+			font-size: 0.78em; color: rgba(255,255,255,0.5);
+			line-height: 1.55; margin: 0 0 12px;
+		}
+		/* 章リストプレビュー */
+		.pillar-guide-chapters {
+			list-style: none; margin: 0; padding: 0;
+			display: flex; flex-direction: column; gap: 4px;
+		}
+		.pillar-guide-chapters li {
+			font-size: 0.73em; color: rgba(255,255,255,0.55);
+			padding-left: 13px; position: relative;
+			line-height: 1.4;
+			white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+		}
+		.pillar-guide-chapters li::before {
+			content: '›'; position: absolute; left: 0;
+			color: #0077cc; font-weight: 700;
+		}
+		/* コンテンツ数バッジ */
+		.pillar-guide-card-count {
+			display: inline-block; margin-top: 14px;
+			font-size: 0.7em; font-weight: 700;
+			color: rgba(255,255,255,0.4);
+			border-top: 1px solid rgba(255,255,255,0.1);
+			padding-top: 10px; width: 100%;
+		}
+		@media (max-width: 560px) {
+			.pillar-guide-card { padding: 16px 18px; }
+			.pillar-guide-card-title { font-size: 0.9em; }
+		}
+	</style>
+
+	<?php
+	/**
+	 * =========================================
+	 * ピラーページ追加時はここに配列要素を足すだけ
+	 * =========================================
+	 * tag      : カードの小ラベル
+	 * title    : カードタイトル
+	 * desc     : カード副文
+	 * count    : 収録テーマ数など (例: "全9テーマ収録")
+	 * chapters : 章タイトルリスト（最大4件推奨）
+	 * url      : 遷移先のピラーページURL
+	 */
+	$pillar_guides = array(
+		array(
+			'tag'      => '海外事例ガイド',
+			'title'    => '【2026年最新】米国・欧米の物流倉庫 先進事例・自動化テクノロジー完全ガイド',
+			'desc'     => 'AMR・ドローン在庫管理・WES・リバースロジスティクスまで。欧米9テーマの最新動向を体系的に解説。',
+			'count'    => '全9テーマ収録',
+			'chapters' => array(
+				'米国の在庫精度低下とAMR改善事例',
+				'欧州が進める誤出荷ゼロ・ピッキング自動化',
+				'リバースロジスティクス特化型仕分けシステム',
+				'WMS内蔵AIによる需要予測型出荷最適化',
+			),
+			'url'      => home_url( '/advanced-cases/' ),
+		),
+		// ↓ 今後のピラーページはここに追加
+		// array(
+		//     'tag'      => '法規制・制度ガイド',
+		//     'title'    => '【完全解説】物流倉庫業への特定技能・2024年問題 対応マニュアル',
+		//     'desc'     => '施行スケジュール・手続き・企業が備えるべきポイントを網羅。',
+		//     'count'    => '全6テーマ収録',
+		//     'chapters' => array('特定技能とは？物流倉庫への適用範囲', '2024年問題の影響と対策'),
+		//     'url'      => home_url( '/logistics-regulation-guide/' ),
+		// ),
+	);
+
+	if ( ! empty( $pillar_guides ) ) : ?>
+	<section class="pillar-guide-section">
+		<div class="container">
+			<div class="section-header">
+				<div class="section-header-content">
+					<div class="pillar-guide-label-wrap">
+						<span class="pillar-guide-label">
+							<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+							Premium Guide
+						</span>
+					</div>
+					<h2 class="section-title"><?php esc_html_e( '課題解決ナビ', 'logishift' ); ?></h2>
+					<p class="section-description"><?php esc_html_e( '「保存版」まとめガイド。経営判断から現場改善まで、体系的に学べます。', 'logishift' ); ?></p>
+				</div>
+			</div>
+
+			<div class="pillar-guide-grid">
+				<?php foreach ( $pillar_guides as $guide ) : ?>
+				<a href="<?php echo esc_url( $guide['url'] ); ?>" class="pillar-guide-card">
+					<span class="pillar-guide-card-stamp">GUIDE</span>
+					<div class="pillar-guide-card-tag"><?php echo esc_html( $guide['tag'] ); ?></div>
+					<h3 class="pillar-guide-card-title"><?php echo esc_html( $guide['title'] ); ?></h3>
+					<p class="pillar-guide-card-desc"><?php echo esc_html( $guide['desc'] ); ?></p>
+					<?php if ( ! empty( $guide['chapters'] ) ) : ?>
+					<ul class="pillar-guide-chapters">
+						<?php foreach ( array_slice( $guide['chapters'], 0, 4 ) as $ch ) : ?>
+						<li><?php echo esc_html( $ch ); ?></li>
+						<?php endforeach; ?>
+					</ul>
+					<?php endif; ?>
+					<?php if ( ! empty( $guide['count'] ) ) : ?>
+					<span class="pillar-guide-card-count"><?php echo esc_html( $guide['count'] ); ?></span>
+					<?php endif; ?>
+				</a>
+				<?php endforeach; ?>
+			</div>
+		</div>
+	</section>
+	<?php endif; ?>
 
 	<?php
 	// Category sections based on content_strategy.md

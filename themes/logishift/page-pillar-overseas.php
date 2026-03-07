@@ -22,16 +22,31 @@ get_header();
             <div class="container">
                 <div class="nav-grid">
                     <a href="#theme-us-inventory" class="nav-item">
-                        <div class="nav-icon">📦</div>
+                        <div class="nav-icon">
+                            <svg class="nav-icon-svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>
+                        </div>
                         <span>米国 × 在庫精度<br><small>AMR・ドローン棚卸し</small></span>
+                        <span class="nav-scroll-hint" aria-label="このページで読む">
+                            <svg class="nav-scroll-arrow" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg>
+                        </span>
                     </a>
                     <a href="#theme-eu-picking" class="nav-item">
-                        <div class="nav-icon">🤖</div>
+                        <div class="nav-icon">
+                            <svg class="nav-icon-svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg>
+                        </div>
                         <span>欧州 × 誤出荷対策<br><small>AS/RS・ピッキングAI</small></span>
+                        <span class="nav-scroll-hint" aria-label="このページで読む">
+                            <svg class="nav-scroll-arrow" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg>
+                        </span>
                     </a>
                     <a href="#theme-global-wms" class="nav-item">
-                        <div class="nav-icon">☁️</div>
+                        <div class="nav-icon">
+                            <svg class="nav-icon-svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19a3.5 3.5 0 1 1-5.84-2.66 3.5 3.5 0 1 1 5.84 2.66Z"/><path d="M20.9 12.9a3.5 3.5 0 1 0-5.8-2.5"/><path d="M6.3 15.9a3.5 3.5 0 1 1 5.4-3.3"/><path d="M10.8 4.7a3.5 3.5 0 1 0-5.7 3.2"/><path d="m14 14.2 2 2.1"/><path d="M12 12v3"/><path d="m10 14.2-2 2.1"/></svg>
+                        </div>
                         <span>Global × 次世代WMS<br><small>API連携・配置最適化</small></span>
+                        <span class="nav-scroll-hint" aria-label="このページで読む">
+                            <svg class="nav-scroll-arrow" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg>
+                        </span>
                     </a>
                 </div>
             </div>
@@ -65,7 +80,7 @@ get_header();
                                 <thead>
                                     <tr>
                                         <th>地域</th>
-                                        <th>主な制約・課題（検索意図）</th>
+                                        <th>主な制約・課題</th>
                                         <th>自動化・システム化の最新トレンド</th>
                                     </tr>
                                 </thead>
@@ -109,36 +124,34 @@ get_header();
                     </div>
 
                     <div class="portal-cards-grid">
-                        <a href="<?php echo esc_url( home_url( '/us-inventory-accuracy-2026/' ) ); ?>" class="portal-card">
-                            <div class="card-visual us-bg">
+                        <?php
+                        $us_slugs = ['us-inventory-accuracy-2026', 'us-walmart-omnichannel-2026', 'us-robotics-raas-model-2026'];
+                        $us_titles = [
+                            '米国の物流倉庫における『在庫精度』低下のリアルと、AMR等の最新改善事例',
+                            '米ウォルマートに学ぶ、実店舗在庫とFC在庫のオムニチャネル一元管理の実態',
+                            '米国市場を席巻するロボティクス『RaaSモデル』とスモールスタート戦略'
+                        ];
+                        $us_excerpts = [
+                            'なぜ米国は在庫が合わないのか。広大な倉庫でのドローン棚卸しやGTP（Goods to Person）による最新の解決ソリューション（ROI・技術スタック）を徹底深掘り。',
+                            'Amazonに対抗する最大の小売巨人・ウォルマートがいかにして全米の店舗網を巨大な「分散ロジスティクスハブ」へと変貌させているか、その裏側にある強力な在庫同期システムとROIについて深掘り。',
+                            '億単位の初期投資が必要だった自動倉庫時代は終わりを迎えた。サブスクリプションにより中小規模の米国倉庫がいかに素早く・低リスクで自動化を果たしているか解説。'
+                        ];
+
+                        for ($i = 0; $i < 3; $i++) :
+                            $post_obj = get_page_by_path($us_slugs[$i], OBJECT, 'post');
+                            $thumb_url = ($post_obj && has_post_thumbnail($post_obj->ID)) ? get_the_post_thumbnail_url($post_obj->ID, 'large') : '';
+                        ?>
+                        <a href="<?php echo esc_url( home_url( '/' . $us_slugs[$i] . '/' ) ); ?>" class="portal-card">
+                            <div class="card-visual us-bg" <?php if($thumb_url) echo 'style="background-image: url(' . esc_url($thumb_url) . '); background-size: cover; background-position: center;"'; ?>>
                                 <span class="card-type-tag">Case Study</span>
                             </div>
                             <div class="card-body">
-                                <h3>米国の物流倉庫における『在庫精度』低下のリアルと、AMR等の最新改善事例</h3>
-                                <p>なぜ米国は在庫が合わないのか。広大な倉庫でのドローン棚卸しやGTP（Goods to Person）による最新の解決ソリューション（ROI・技術スタック）を徹底深掘り。</p>
+                                <h3><?php echo esc_html($us_titles[$i]); ?></h3>
+                                <p><?php echo esc_html($us_excerpts[$i]); ?></p>
                                 <span class="card-action">事例詳細を読む →</span>
                             </div>
                         </a>
-                        <a href="<?php echo esc_url( home_url( '/us-walmart-omnichannel-2026/' ) ); ?>" class="portal-card">
-                            <div class="card-visual us-bg">
-                                <span class="card-type-tag">Case Study</span>
-                            </div>
-                            <div class="card-body">
-                                <h3>米ウォルマートに学ぶ、実店舗在庫とFC在庫のオムニチャネル一元管理の実態</h3>
-                                <p>Amazonに対抗する最大の小売巨人・ウォルマートがいかにして全米の店舗網を巨大な「分散ロジスティクスハブ」へと変貌させているか、その裏側にある強力な在庫同期システムとROIについて深掘り。</p>
-                                <span class="card-action">事例詳細を読む →</span>
-                            </div>
-                        </a>
-                        <a href="<?php echo esc_url( home_url( '/us-robotics-raas-model-2026/' ) ); ?>" class="portal-card">
-                            <div class="card-visual us-bg">
-                                <span class="card-type-tag">Case Study</span>
-                            </div>
-                            <div class="card-body">
-                                <h3>米国市場を席巻するロボティクス『RaaSモデル』とスモールスタート戦略</h3>
-                                <p>億単位の初期投資が必要だった自動倉庫時代は終わりを迎えた。サブスクリプションにより中小規模の米国倉庫がいかに素早く・低リスクで自動化を果たしているか解説。</p>
-                                <span class="card-action">事例詳細を読む →</span>
-                            </div>
-                        </a>
+                        <?php endfor; ?>
                     </div>
                 </section>
 
@@ -160,36 +173,34 @@ get_header();
                     </div>
 
                     <div class="portal-cards-grid">
-                        <a href="<?php echo esc_url( home_url( '/eu-picking-automation-2026/' ) ); ?>" class="portal-card">
-                            <div class="card-visual eu-bg">
+                        <?php
+                        $eu_slugs = ['eu-picking-automation-2026', 'eu-reverse-logistics-system-2026', 'eu-sustainable-packaging-2026'];
+                        $eu_titles = [
+                            '北米・欧州を悩ます『誤出荷』の実態と、海外企業が導入するピッキング自動化',
+                            '欧州アパレル企業における『リバースロジスティクス』特化型仕分けシステム',
+                            '脱炭素と効率化の両立。欧米が推進する『サステナブル自動梱包』技術'
+                        ];
+                        $eu_excerpts = [
+                            'EC返品率が異常に高い市場で、AS/RS（自動立体倉庫）とビジョンAI搭載ピッキングアームがいかにして誤出荷を防ぎROIを生み出しているかを解説。',
+                            '返品をコストではなく「再商品化レース」と捉え直す欧州エコシステム。ファッション・アパレル業界における返品物流を黒字化するための専用ソリューションに迫る。',
+                            '「空気を運ぶ」無駄を一掃し、環境負荷と輸送コストを同時削減する。欧米における最新のジャストサイズ自動梱包技術（On-Demand Packaging）の真価と導入効果。'
+                        ];
+
+                        for ($i = 0; $i < 3; $i++) :
+                            $post_obj = get_page_by_path($eu_slugs[$i], OBJECT, 'post');
+                            $thumb_url = ($post_obj && has_post_thumbnail($post_obj->ID)) ? get_the_post_thumbnail_url($post_obj->ID, 'large') : '';
+                        ?>
+                        <a href="<?php echo esc_url( home_url( '/' . $eu_slugs[$i] . '/' ) ); ?>" class="portal-card">
+                            <div class="card-visual eu-bg" <?php if($thumb_url) echo 'style="background-image: url(' . esc_url($thumb_url) . '); background-size: cover; background-position: center;"'; ?>>
                                 <span class="card-type-tag">Case Study</span>
                             </div>
                             <div class="card-body">
-                                <h3>北米・欧州を悩ます『誤出荷』の実態と、海外企業が導入するピッキング自動化</h3>
-                                <p>EC返品率が異常に高い市場で、AS/RS（自動立体倉庫）とビジョンAI搭載ピッキングアームがいかにして誤出荷を防ぎROIを生み出しているかを解説。</p>
+                                <h3><?php echo esc_html($eu_titles[$i]); ?></h3>
+                                <p><?php echo esc_html($eu_excerpts[$i]); ?></p>
                                 <span class="card-action">事例詳細を読む →</span>
                             </div>
                         </a>
-                        <a href="<?php echo esc_url( home_url( '/eu-reverse-logistics-system-2026/' ) ); ?>" class="portal-card">
-                            <div class="card-visual eu-bg">
-                                <span class="card-type-tag">Case Study</span>
-                            </div>
-                            <div class="card-body">
-                                <h3>欧州アパレル企業における『リバースロジスティクス』特化型仕分けシステム</h3>
-                                <p>返品をコストではなく「再商品化レース」と捉え直す欧州エコシステム。ファッション・アパレル業界における返品物流を黒字化するための専用ソリューションに迫る。</p>
-                                <span class="card-action">事例詳細を読む →</span>
-                            </div>
-                        </a>
-                        <a href="<?php echo esc_url( home_url( '/eu-sustainable-packaging-2026/' ) ); ?>" class="portal-card">
-                            <div class="card-visual eu-bg">
-                                <span class="card-type-tag">Case Study</span>
-                            </div>
-                            <div class="card-body">
-                                <h3>脱炭素と効率化の両立。欧米が推進する『サステナブル自動梱包』技術</h3>
-                                <p>「空気を運ぶ」無駄を一掃し、環境負荷と輸送コストを同時削減する。欧米における最新のジャストサイズ自動梱包技術（On-Demand Packaging）の真価と導入効果。</p>
-                                <span class="card-action">事例詳細を読む →</span>
-                            </div>
-                        </a>
+                        <?php endfor; ?>
                     </div>
                 </section>
 
@@ -211,36 +222,34 @@ get_header();
                     </div>
 
                     <div class="portal-cards-grid">
-                        <a href="<?php echo esc_url( home_url( '/global-wms-trend-2026/' ) ); ?>" class="portal-card">
-                            <div class="card-visual global-bg">
+                        <?php
+                        $wms_slugs = ['global-wms-trend-2026', 'global-wes-integration-fail-2026', 'global-wms-ai-prediction-2026'];
+                        $wms_titles = [
+                            '【欧米WMS事情】クラウド型倉庫管理システムの進化と2026年の要件',
+                            '異機種ロボット（AMR/AGV）を統合制御する「WES」導入の失敗事例',
+                            'データサイエンスが描く未来。WMS内蔵AIによる『需要予測型』出荷・配置最適化'
+                        ];
+                        $wms_excerpts = [
+                            'SaaS移行が完了した海外トップベンダーの動向から紐解く、WES機能の統合とAI予測がもたらすシステムアーキテクチャの革新。',
+                            '異なるメーカーの群制御を夢見てWESを導入したもののシステム間衝突で現場が崩壊した失敗事例から、正しいアーキテクチャ（APIエコシステム）の選び方を学ぶ。',
+                            '「注文が入ってから」動く時代は終わる。次世代WMSが膨大な過去データと外部APIを掛け合わせ、「明日何が売れ、どこに配置しておくべきか」を事前に自律指示する世界観を解説。'
+                        ];
+
+                        for ($i = 0; $i < 3; $i++) :
+                            $post_obj = get_page_by_path($wms_slugs[$i], OBJECT, 'post');
+                            $thumb_url = ($post_obj && has_post_thumbnail($post_obj->ID)) ? get_the_post_thumbnail_url($post_obj->ID, 'large') : '';
+                        ?>
+                        <a href="<?php echo esc_url( home_url( '/' . $wms_slugs[$i] . '/' ) ); ?>" class="portal-card">
+                            <div class="card-visual global-bg" <?php if($thumb_url) echo 'style="background-image: url(' . esc_url($thumb_url) . '); background-size: cover; background-position: center;"'; ?>>
                                 <span class="card-type-tag">Trend Report</span>
                             </div>
                             <div class="card-body">
-                                <h3>【欧米WMS事情】クラウド型倉庫管理システムの進化と2026年の要件</h3>
-                                <p>SaaS移行が完了した海外トップベンダーの動向から紐解く、WES機能の統合とAI予測がもたらすシステムアーキテクチャの革新。</p>
+                                <h3><?php echo esc_html($wms_titles[$i]); ?></h3>
+                                <p><?php echo esc_html($wms_excerpts[$i]); ?></p>
                                 <span class="card-action">トレンドレポートを読む →</span>
                             </div>
                         </a>
-                        <a href="<?php echo esc_url( home_url( '/global-wes-integration-fail-2026/' ) ); ?>" class="portal-card">
-                            <div class="card-visual global-bg">
-                                <span class="card-type-tag">Trend Report</span>
-                            </div>
-                            <div class="card-body">
-                                <h3>異機種ロボット（AMR/AGV）を統合制御する「WES」導入の失敗事例</h3>
-                                <p>異なるメーカーの群制御を夢見てWESを導入したもののシステム間衝突で現場が崩壊した失敗事例から、正しいアーキテクチャ（APIエコシステム）の選び方を学ぶ。</p>
-                                <span class="card-action">トレンドレポートを読む →</span>
-                            </div>
-                        </a>
-                        <a href="<?php echo esc_url( home_url( '/global-wms-ai-prediction-2026/' ) ); ?>" class="portal-card">
-                            <div class="card-visual global-bg">
-                                <span class="card-type-tag">Trend Report</span>
-                            </div>
-                            <div class="card-body">
-                                <h3>データサイエンスが描く未来。WMS内蔵AIによる『需要予測型』出荷・配置最適化</h3>
-                                <p>「注文が入ってから」動く時代は終わる。次世代WMSが膨大な過去データと外部APIを掛け合わせ、「明日何が売れ、どこに配置しておくべきか」を事前に自律指示する世界観を解説。</p>
-                                <span class="card-action">トレンドレポートを読む →</span>
-                            </div>
-                        </a>
+                        <?php endfor; ?>
                         <!-- User Content Area (For any extra content added via WordPress Editor) -->
                         <div class="portal-custom-content" style="grid-column: 1 / -1;">
                             <?php the_content(); ?>
@@ -248,10 +257,33 @@ get_header();
                     </div>
                 </section>
 
-                <!-- Footer CTA -->
+                <!-- Footer Summary -->
                 <section class="portal-cta">
-                    <h2>日本市場における「最適なアプローチ」とは？</h2>
-                    <p>海外の先進事例はスケールが巨大ですが、すべてを一度に模倣する（億単位のAS/RSを導入する）必要はありません。LogiShiftでは、これら海外のエッセンスを日本の「2024・2026年問題」に合わせ、<strong>クラウド基盤によるサイロ化解消と、特定ゾーンへのスモールスタート（RaaS・AMR導入）</strong>へと落とし込むハイブリッド戦略を推奨しています。</p>
+                    <div class="summary-container">
+                        <h2>サマリー：米国における「物件価値」としての在庫精度</h2>
+                        
+                        <div class="summary-grid">
+                            <div class="summary-item">
+                                <h3><span class="dot"></span>背景：広大さが生む「見えない在庫」</h3>
+                                <p>広大な国土に展開するメガ・ディストリビューションセンターでは、人間が歩いて棚を確認すること自体が物理的な制約となります。この規模の不経済が、帳簿と実在庫が乖離する「見えない在庫」問題を引き起こしてきました。</p>
+                            </div>
+                            
+                            <div class="summary-item">
+                                <h3><span class="dot"></span>現状：人海戦術の限界と高騰するコスト</h3>
+                                <p>労働力不足と賃金上昇により、従来の「人による棚卸し」はコスト・精度・安全性の全側面で限界に達しています。年に一度の一斉棚卸しではなく、業務を止めない継続的な確認が不可欠となっています。</p>
+                            </div>
+                            
+                            <div class="summary-item">
+                                <h3><span class="dot"></span>打ち手：自動サイクルカウントへのシフト</h3>
+                                <p>現在、米国では走行型AMRやドローンを用いた「自動サイクルカウント」が普及し始めています。WMSとエッジセンサーをリアルタイムに同期させることで、常に「正しい在庫数」を維持する仕組みが主流です。</p>
+                            </div>
+                            
+                            <div class="summary-item">
+                                <h3><span class="dot"></span>今後：「棚卸し」という概念の消失</h3>
+                                <p>将来的には、サイクルカウントの完全自動化により「棚卸し」というイベント自体が消滅します。理論在庫と実在庫が常に一致する「Inventory Integrity（在庫の完全性）」が、物流センターの標準的な資産価値となります。</p>
+                            </div>
+                        </div>
+                    </div>
                 </section>
 
             </div>
